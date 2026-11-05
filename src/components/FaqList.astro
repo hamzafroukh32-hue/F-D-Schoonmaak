@@ -1,0 +1,30 @@
+---
+import type { Faq } from '../data/types';
+import { withPlaceholders } from '../lib/text';
+
+interface Props {
+  faqs: Faq[];
+  title?: string;
+  headingLevel?: 'h2' | 'h3';
+}
+const { faqs, title = 'Veelgestelde vragen', headingLevel = 'h2' } = Astro.props;
+const H = headingLevel;
+---
+<div class="faq">
+  {title && <H class="mb-6">{title}</H>}
+  <div class="divide-y divide-line overflow-hidden rounded-card border border-line bg-paper">
+    {
+      faqs.map((f) => (
+        <details class="group">
+          <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-semibold text-primary hover:bg-surface [&::-webkit-details-marker]:hidden">
+            <span>{f.vraag}</span>
+            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-secondary-soft text-secondary transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-muted">
+            <p set:html={withPlaceholders(f.antwoord)} />
+          </div>
+        </details>
+      ))
+    }
+  </div>
+</div>

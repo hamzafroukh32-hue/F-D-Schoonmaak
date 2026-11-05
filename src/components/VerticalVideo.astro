@@ -1,0 +1,42 @@
+---
+/**
+ * Slot for a short vertical video (Reels/TikTok style, 9:16).
+ * To activate: put an MP4 in public/video/ and a poster image in public/video/, then set `src` + `poster`.
+ * Self-hosted video loads nothing until the user presses play (preload="none").
+ */
+import { site } from '../config/site';
+import Icon from './Icon.astro';
+
+interface Props {
+  src?: string;
+  poster?: string;
+  captions?: string; // WebVTT subtitles; defaults to the video path with .nl.vtt (e.g. /video/intro.mp4 → /video/intro.nl.vtt)
+  title?: string;
+  caption?: string;
+  class?: string;
+}
+const { src, poster, captions = '', title = 'Korte video van ons werk', caption, class: className = 'mx-auto w-full max-w-xs' } = Astro.props;
+---
+{
+  site.flags.showVideo && (
+    <figure class={className}>
+      <div class="relative aspect-[9/16] overflow-hidden rounded-[1.5rem] bg-primary shadow-lift">
+        {src ? (
+          <video class="h-full w-full object-cover" controls playsinline muted preload="none" poster={poster} width="540" height="968" title={title} aria-label={title}>
+            <source src={src} type="video/mp4" />
+            <track kind="captions" src={captions || src.replace(/\.mp4$/, '.nl.vtt')} srclang="nl" label="Nederlands" />
+          </video>
+        ) : (
+          <div class="grid h-full place-items-center p-6 text-center text-white">
+            <div>
+              <Icon name="play" class="mx-auto h-14 w-14 text-accent" />
+              <p class="mt-4 font-display font-bold">Plek voor een korte video</p>
+              <p class="mt-2 text-sm text-white/80">Bijvoorbeeld een voor/na in 15 seconden of een kennismaking met het team.</p>
+            </div>
+          </div>
+        )}
+      </div>
+      {caption && <figcaption class="mt-3 text-center text-sm text-muted">{caption}</figcaption>}
+    </figure>
+  )
+}

@@ -1,0 +1,62 @@
+---
+// A price list: name and description on the left, "vanaf" price aligned right with a dotted leader.
+import { site, PLACEHOLDER } from '../config/site';
+import { pakketten, btwLabel, formatEuro } from '../data/prijzen';
+import { actieveDiensten } from '../data/diensten';
+
+interface Props {
+  ids?: string[];
+  title?: string;
+  intro?: string;
+  showAllLink?: boolean;
+}
+const {
+  ids,
+  title = 'Prijzen vooraf',
+  intro = 'Veel schoonmaakbedrijven tonen geen prijzen. Wij laten zien waar de prijs begint. Uw vaste prijs krijgt u na een foto of korte opname.',
+  showAllLink = true,
+} = Astro.props;
+const actieveSlugs = new Set(actieveDiensten.map((d) => d.slug));
+const items = pakketten.filter((p) => actieveSlugs.has(p.dienstSlug) && (!ids || ids.includes(p.id)));
+---
+{
+  site.flags.showPrices && (
+    <section class="section bg-surface" aria-labelledby="prijzen-titel">
+      <div class="container-page grid gap-10 lg:grid-cols-[1fr_1.6fr]" data-reveal>
+        <div>
+          <h2 id="prijzen-titel" class="wave">{title}</h2>
+          <p class="lead mt-4">{intro}</p>
+          {showAllLink && (
+            <p class="mt-6">
+              <a href="/prijzen/" class="font-semibold text-secondary underline">
+                Alle prijzen en de rekenhulp
+              </a>
+            </p>
+          )}
+        </div>
+        <ul class="divide-y divide-line-strong border-y border-line-strong" data-stagger>
+          {items.map((p) => (
+            <li class="py-5">
+              <div class="flex items-baseline gap-3">
+                <a href={`/diensten/${p.dienstSlug}/`} class="font-display text-xl font-bold text-primary no-underline hover:underline" style="font-stretch: 85%">
+                  {p.naam}
+                </a>
+                <span class="leader mb-1.5 flex-1 border-b-2 border-dotted border-brand-cyan" aria-hidden="true" />
+                <span class="shrink-0 text-right font-display text-primary">
+                  <span class="text-sm text-muted">vanaf </span>
+                  {p.vanaf === null ? <mark class="ph text-lg">{PLACEHOLDER}</mark> : <strong class="text-2xl">{formatEuro(p.vanaf)}</strong>}
+                </span>
+              </div>
+              <div class="mt-1 grid gap-x-6 text-[0.95rem] text-muted sm:grid-cols-[1fr_auto]">
+                <p class="max-w-[52ch]">{p.omschrijving}</p>
+                <p class="sm:text-right">
+                  {p.eenheid}, {btwLabel[p.doelgroep]}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

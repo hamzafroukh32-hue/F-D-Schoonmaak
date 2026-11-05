@@ -1,0 +1,35 @@
+---
+import { telUrl, whatsappUrl } from '../config/site';
+import Icon from './Icon.astro';
+---
+<nav
+  aria-label="Snel contact"
+  class="sticky-bar fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 gap-2 border-t border-line bg-paper/95 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-lift backdrop-blur md:hidden"
+>
+  <a
+    href={whatsappUrl()}
+    target="_blank"
+    rel="noopener"
+    class="flex min-h-12 flex-col items-center justify-center rounded-button bg-whatsapp text-sm font-semibold text-white no-underline"
+    data-cta="sticky-whatsapp"
+  >
+    <Icon name="whatsapp" class="h-5 w-5" />
+    App ons
+  </a>
+  <a
+    href={telUrl}
+    class="flex min-h-12 flex-col items-center justify-center rounded-button bg-primary text-sm font-semibold text-white no-underline"
+    data-cta="sticky-bel"
+  >
+    <Icon name="phone" class="h-5 w-5" />
+    Bel
+  </a>
+  <a
+    href="/offerte/"
+    class="flex min-h-12 flex-col items-center justify-center rounded-button bg-accent text-center text-xs leading-tight font-semibold text-accent-ink no-underline"
+    data-cta="sticky-offerte"
+  >
+    <Icon name="euro" class="h-5 w-5" />
+    Offerte aanvragen
+  </a>
+</nav>

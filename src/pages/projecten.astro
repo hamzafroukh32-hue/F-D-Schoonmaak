@@ -1,0 +1,124 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
+import VerticalVideo from '../components/VerticalVideo.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import Button from '../components/Button.astro';
+import { projectenMetFoto as projecten, projectCategorieen, heeftFotos } from '../data/projecten';
+import { site, whatsappUrl } from '../config/site';
+import { videos, videoSrc } from '../data/videos';
+
+const categorieen = projectCategorieen.filter((c) => projecten.some((p) => p.categorie === c.id));
+---
+<BaseLayout
+  title="Voor en na: ons schoonmaakwerk | F&D Schoonmaak"
+  description="Bekijk voor- en na-foto’s van schoonmaakklussen van F&D Schoonmaak in Twente. Ramen, praktijken, kantoren en eindschoonmaak."
+  crumbs={[{ name: 'Voor & na', path: '/projecten/' }]}
+  noindex={!heeftFotos}
+>
+  <PageHero
+    title="Voor en na"
+    intro={['Woorden zijn makkelijk. Daarom laten we zien wat we doen. Schuif over een foto om voor en na te vergelijken, of bekijk de video’s.']}
+  />
+
+  {heeftFotos ? (
+  <section class="section" aria-labelledby="fotos">
+    <div class="container-page">
+      <h2 id="fotos" class="sr-only">Voor- en na-foto’s</h2>
+      <div class="mb-8 flex flex-wrap items-center gap-2" data-filter hidden>
+        <span class="mr-2 font-semibold text-primary" id="filter-label">Toon:</span>
+        <div role="group" aria-labelledby="filter-label" class="flex flex-wrap gap-2">
+          <button type="button" data-cat="alles" aria-pressed="true" class="filter-btn">Alles</button>
+          {categorieen.map((c) => <button type="button" data-cat={c.id} aria-pressed="false" class="filter-btn">{c.label}</button>)}
+        </div>
+        <p class="sr-only" aria-live="polite" data-filter-status></p>
+      </div>
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+        {projecten.map((p, i) => <div data-categorie={p.categorie}><BeforeAfter project={p} index={i} /></div>)}
+      </div>
+      <p class="mt-8 max-w-3xl rounded-card bg-surface p-5 text-[0.95rem] text-muted">
+        <strong class="text-primary">Over deze foto’s:</strong> we plaatsen alleen foto’s met toestemming van de klant. Op de foto’s staan geen herkenbare personen,
+        namen, documenten, huisnummers of kentekens.
+      </p>
+    </div>
+  </section>
+
+  ) : (
+    <section class="section">
+      <div class="container-page max-w-2xl">
+        <h2>Binnenkort te zien</h2>
+        <p class="lead mt-4">We verzamelen nu voor- en na-foto’s van ons werk. Wil je weten wat we voor jou kunnen doen? Stuur een foto, dan krijg je snel een prijs.</p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button href={whatsappUrl()} variant="whatsapp" icon="whatsapp" external>App ons</Button>
+          <Button href="/offerte/" variant="accent">Bereken je prijs</Button>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {site.flags.showVideo && (
+  <section class="section bg-surface" aria-labelledby="video">
+    <div class="container-page" data-reveal>
+      <h2 id="video" class="wave">Video’s van ons werk</h2>
+      <p class="lead mt-4">Korte filmpjes van echte klussen: stoom tegen vet, streeploos glas en een badkamer die weer glanst.</p>
+      <ul class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" data-stagger>
+        {videos.map((v) => (
+          <li><VerticalVideo {...videoSrc(v)} title={v.titel} caption={v.titel} class="w-full" /></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+  )}
+
+  <CtaBlock title="Ook zo’n resultaat?" />
+</BaseLayout>
+
+<style>
+  .filter-btn {
+    min-height: 2.75rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-line-strong);
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-paper);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .filter-btn:hover {
+    border-color: var(--color-secondary);
+    transform: translateY(-1px);
+  }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+  [data-categorie][hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  // Category filter for the before/after grid. Without JS all projects are shown.
+  const bar = document.querySelector<HTMLElement>("[data-filter]");
+  if (bar) {
+    bar.hidden = false;
+    const buttons = bar.querySelectorAll<HTMLButtonElement>("[data-cat]");
+    const items = document.querySelectorAll<HTMLElement>("[data-categorie]");
+    const status = bar.querySelector<HTMLElement>("[data-filter-status]");
+    const apply = (cat: string) => {
+      let shown = 0;
+      items.forEach((el) => {
+        const show = cat === "alles" || el.dataset.categorie === cat;
+        el.hidden = !show;
+        if (show) shown++;
+      });
+      buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cat === cat)));
+      if (status) status.textContent = shown + " projecten getoond";
+    };
+    buttons.forEach((b) => b.addEventListener("click", () => apply(b.dataset.cat!)));
+    const fromUrl = new URLSearchParams(location.search).get("categorie");
+    if (fromUrl && [...buttons].some((b) => b.dataset.cat === fromUrl)) apply(fromUrl);
+  }
+</script>

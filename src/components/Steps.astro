@@ -1,0 +1,32 @@
+---
+// A real sequence, so numbered: a horizontal timeline on desktop, a vertical one on mobile.
+// The connector lines draw in when the timeline scrolls into view.
+interface Props {
+  steps: { titel: string; tekst: string }[];
+}
+const { steps } = Astro.props;
+---
+<ol class="relative grid gap-8 md:grid-cols-3 md:gap-10" data-reveal>
+  {
+    steps.map((s, i) => (
+      <li class="relative pl-14 md:pt-16 md:pl-0">
+        <span
+          class="step-num absolute top-0 left-0 grid h-11 w-11 place-items-center rounded-full bg-primary font-display text-xl font-extrabold text-white"
+          style={`transition-delay:${0.15 + i * 0.25}s`}
+          aria-hidden="true"
+        >
+          {i + 1}
+        </span>
+        {i < steps.length - 1 && (
+          <span
+            class="step-line absolute top-12 bottom-[-2rem] left-[1.35rem] w-0.5 bg-brand-cyan md:top-[1.35rem] md:right-[-2.5rem] md:bottom-auto md:left-14 md:h-0.5 md:w-auto"
+            style={`transition-delay:${0.3 + i * 0.25}s`}
+            aria-hidden="true"
+          />
+        )}
+        <h3>{s.titel}</h3>
+        <p class="mt-2 max-w-[36ch] text-muted">{s.tekst}</p>
+      </li>
+    ))
+  }
+</ol>

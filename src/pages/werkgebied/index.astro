@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import Icon from '../../components/Icon.astro';
+import { plaatsen } from '../../data/plaatsen';
+import { site } from '../../config/site';
+---
+<BaseLayout
+  title="Werkgebied: schoonmaak in heel Twente | F&D Schoonmaak"
+  description="F&D Schoonmaak werkt in Enschede, Hengelo, Oldenzaal, Almelo, Borne, Haaksbergen en Hof van Twente. Bekijk wat we per plaats doen."
+  crumbs={[{ name: 'Werkgebied', path: '/werkgebied/' }]}
+>
+  <PageHero
+    title="Schoonmaak in heel Twente"
+    intro={[`We zijn gevestigd in ${site.address.city} en werken in de plaatsen hieronder. Twijfelt u of u in ons werkgebied valt? Stuur een appje.`]}
+  />
+
+  <section class="section" aria-label="Plaatsen">
+    <div class="container-page">
+      <ul class="grid border-t border-line md:grid-cols-2 md:gap-x-12" data-stagger>
+        {plaatsen.map((p) => (
+          <li class="border-b border-line">
+            <a href={`/werkgebied/${p.slug}/`} class="row-link group flex gap-4 py-6 no-underline">
+              <Icon name="pin" class="mt-1 h-6 w-6 shrink-0 text-secondary" />
+              <span>
+                <h2 class="text-[1.75rem]">Schoonmaakbedrijf {p.naam}</h2>
+                <span class="mt-2 block max-w-[52ch] text-muted">{p.intro[0]}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBlock />
+</BaseLayout>

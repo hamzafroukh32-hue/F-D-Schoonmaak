@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import QuoteForm from '../components/QuoteForm.astro';
+import ContactButtons from '../components/ContactButtons.astro';
+import { site } from '../config/site';
+---
+<BaseLayout
+  title="Schoonmaak offerte aanvragen | F&D Schoonmaak"
+  description="Vraag een schoonmaak offerte aan bij F&D Schoonmaak. App, bel of vul het korte formulier in. We reageren binnen 1 minuut."
+  crumbs={[{ name: 'Contact en offerte', path: '/contact/' }]}
+>
+  <section class="border-b border-line bg-surface">
+    <div class="container-page py-12 sm:py-16">
+      <h1>Offerte aanvragen</h1>
+      <p class="lead mt-4 max-w-2xl">
+        Het snelst gaat het via WhatsApp of telefoon. Liever een formulier? Vul het hieronder in. We reageren {site.responseTime}.
+      </p>
+
+      <div class="mt-10 grid gap-8 lg:grid-cols-[1fr_22rem]">
+        <div>
+          <QuoteForm />
+        </div>
+        <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start" aria-label="Direct contact">
+          <ContactButtons />
+          <div class="rounded-card border border-line bg-paper p-5 text-[0.95rem]">
+            <h2 class="text-lg">Adres</h2>
+            <address class="mt-2 text-muted not-italic">
+              {site.name}<br />
+              {site.address.street}<br />
+              {site.address.postalCode ? `${site.address.postalCode} ` : ''}{site.address.city}
+            </address>
+            <p class="mt-2 text-muted">KvK {site.legal.kvk}</p>
+          </div>
+          <div class="rounded-card bg-primary p-5 text-white">
+            <h2 class="text-lg text-white">Groter project?</h2>
+            <p class="mt-2 text-white/85">Groter project? Neem contact op. Dan kijken we samen wat mogelijk is.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

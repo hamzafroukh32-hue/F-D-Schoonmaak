@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import { site, whatsappUrl, telUrl } from '../config/site';
+import { withPlaceholders } from '../lib/text';
+import FaqList from '../components/FaqList.astro';
+import { faqSchema } from '../lib/schema';
+
+const waText = 'Hallo F&D Schoonmaak, ik wil graag bij jullie werken. Mijn naam is ';
+const bieden = [
+  'Salaris, uren en contract bespreken we in een kort, persoonlijk gesprek',
+  'Werkgebied: Twente (Enschede, Hengelo, Oldenzaal, Almelo, Borne, Haaksbergen, Hof van Twente)',
+  'Een vaste contactpersoon die je snel antwoord geeft',
+];
+const zoeken = [
+  'Je bent betrouwbaar en komt je afspraken na',
+  'Je werkt netjes en ziet zelf wat er moet gebeuren',
+  'Ervaring is fijn, maar niet verplicht',
+];
+const faq = [
+  { vraag: 'Moet ik een cv sturen?', antwoord: 'Nee. Stuur een appje met je naam, waar je woont en hoeveel uur je wilt werken. Dan bellen we je.' },
+  { vraag: 'Heb ik ervaring nodig?', antwoord: 'Nee, ervaring is niet verplicht. Je gaat de eerste keren mee met iemand die het werk kent.' },
+];
+---
+<BaseLayout
+  title="Vacatures schoonmaker Twente | F&D Schoonmaak"
+  description="Werken als schoonmaker in Twente? Solliciteer bij F&D Schoonmaak met een appje. Geen cv nodig, wel een vaste contactpersoon."
+  crumbs={[{ name: 'Vacatures', path: '/vacatures/' }]}
+  schemas={[faqSchema(faq)]}
+>
+  <section class="border-b border-line bg-surface">
+    <div class="container-page py-12 sm:py-16">
+      <div class="max-w-3xl">
+        <h1>Schoonmaker worden in Twente?</h1>
+        <p class="lead mt-4">Solliciteren gaat bij ons met één appje. Geen cv nodig. Stuur je naam, je woonplaats en hoeveel uur je wilt werken.</p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button href={whatsappUrl(waText)} variant="whatsapp" size="lg" icon="whatsapp" external data-cta="vacature-whatsapp">Solliciteer via WhatsApp</Button>
+          <Button href={telUrl} variant="outline" size="lg" icon="phone" data-cta="vacature-bel">Bel {site.contact.phoneDisplay}</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Wat we bieden en zoeken">
+    <div class="container-page grid gap-8 lg:grid-cols-2">
+      <div class="card">
+        <h2 class="text-2xl">Wat we bieden</h2>
+        <ul class="mt-5 space-y-3">
+          {bieden.map((b) => (
+            <li class="flex gap-3"><Icon name="check" class="mt-1 h-5 w-5 shrink-0 text-secondary" /><span set:html={withPlaceholders(b)} /></li>
+          ))}
+        </ul>
+      </div>
+      <div class="card">
+        <h2 class="text-2xl">Wie we zoeken</h2>
+        <ul class="mt-5 space-y-3">
+          {zoeken.map((z) => (
+            <li class="flex gap-3"><Icon name="check" class="mt-1 h-5 w-5 shrink-0 text-secondary" /><span set:html={withPlaceholders(z)} /></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-surface" aria-label="Veelgestelde vragen">
+    <div class="container-page max-w-3xl">
+      <FaqList faqs={faq} title="Vragen over solliciteren" />
+      <div class="mt-8">
+        <Button href={whatsappUrl(waText)} variant="whatsapp" icon="whatsapp" external>Stuur een appje</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

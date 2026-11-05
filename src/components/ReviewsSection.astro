@@ -1,0 +1,29 @@
+---
+// Renders nothing unless flags.showReviews is on AND there are real reviews.
+import { site } from '../config/site';
+import { reviews } from '../data/reviews';
+const show = site.flags.showReviews && reviews.length > 0;
+---
+{
+  show && (
+    <section class="section" aria-labelledby="reviews-titel">
+      <div class="container-page">
+        <h2 id="reviews-titel">Wat klanten zeggen</h2>
+        <ul class="mt-10 grid gap-4 md:grid-cols-3">
+          {reviews.map((r) => (
+            <li class="card">
+              <p class="text-accent" aria-label={`${r.score} van 5 sterren`}>
+                {'★'.repeat(r.score)}
+                <span class="text-line">{'★'.repeat(5 - r.score)}</span>
+              </p>
+              <blockquote class="mt-3 text-ink">“{r.tekst}”</blockquote>
+              <p class="mt-4 text-sm text-muted">
+                {r.naam} uit {r.plaats}, via {r.bron}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

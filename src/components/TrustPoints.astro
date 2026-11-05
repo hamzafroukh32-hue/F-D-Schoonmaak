@@ -1,0 +1,20 @@
+---
+import { site } from '../config/site';
+import Icon from './Icon.astro';
+
+interface Props {
+  light?: boolean;
+}
+const { light = false } = Astro.props;
+const points = [`Reactie ${site.responseTime}`, 'Vaste prijs, vooraf op papier', `Gevestigd in ${site.address.city}`];
+---
+<ul class:list={['flex flex-col gap-x-6 gap-y-2 sm:flex-row sm:flex-wrap', light ? 'text-white' : 'text-ink']}>
+  {
+    points.map((p) => (
+      <li class="flex items-center gap-2 font-medium">
+        <Icon name="check" class:list={['h-5 w-5 shrink-0', light ? 'text-accent' : 'text-secondary']} />
+        {p}
+      </li>
+    ))
+  }
+</ul>

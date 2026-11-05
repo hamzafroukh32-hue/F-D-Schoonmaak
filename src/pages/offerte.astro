@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import OfferteCalculator from '../components/OfferteCalculator.astro';
+import TrustPoints from '../components/TrustPoints.astro';
+import Bubbles from '../components/Bubbles.astro';
+import { site, whatsappUrl, telUrl } from '../config/site';
+---
+<BaseLayout
+  title="Offerte berekenen: glazenwasser en schoonmaak | F&D"
+  description="Bereken direct je prijs voor glasbewassing, schoonmaak of diepteschoonmaak in Twente. Kies woning of bedrijf, ramen of uren, en zie meteen je prijs."
+  crumbs={[{ name: 'Offerte berekenen', path: '/offerte/' }]}
+  hideStickyBar
+>
+  <section class="relative overflow-hidden border-b border-line bg-surface">
+    <Bubbles tone="light" sparkles={false} />
+    <div class="container-page relative py-10 sm:py-14">
+      <h1><span class="wipe inline-block">Bereken direct je prijs</span></h1>
+      <p class="lead mt-4 text-ink">Kies wat er schoon moet. Je ziet meteen je prijs, inclusief btw. Liever even overleggen?</p>
+      <p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 font-semibold">
+        <a href={whatsappUrl()} target="_blank" rel="noopener" class="text-secondary underline">App ons</a>
+        <a href={telUrl} class="text-secondary underline">Bel {site.contact.phoneDisplay}</a>
+      </p>
+      <div class="mt-6"><TrustPoints /></div>
+    </div>
+  </section>
+
+  <section class="py-10 sm:py-14">
+    <div class="container-page">
+      <OfferteCalculator />
+    </div>
+  </section>
+</BaseLayout>

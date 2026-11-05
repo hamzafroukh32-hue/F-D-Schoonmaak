@@ -1,0 +1,63 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { site, absoluteUrl } from '../../config/site';
+import { businessId } from '../../lib/schema';
+import { getDienst } from '../../data/diensten';
+
+export const getStaticPaths = (async () => {
+  const artikelen = await getCollection('kennisbank');
+  return artikelen.map((a) => ({ params: { slug: a.id }, props: { artikel: a } }));
+}) satisfies GetStaticPaths;
+
+const { artikel } = Astro.props as { artikel: CollectionEntry<'kennisbank'> };
+const { Content } = await render(artikel);
+const d = artikel.data;
+const path = `/kennisbank/${artikel.id}/`;
+const dienst = getDienst(d.dienst);
+const datum = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'long' }).format(d.updatedDate ?? d.pubDate);
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: d.h1,
+  description: d.description,
+  datePublished: d.pubDate.toISOString(),
+  dateModified: (d.updatedDate ?? d.pubDate).toISOString(),
+  inLanguage: 'nl-NL',
+  mainEntityOfPage: absoluteUrl(path),
+  image: absoluteUrl('/og-default.png'),
+  author: { '@type': 'Organization', name: site.name, '@id': businessId },
+  publisher: { '@id': businessId },
+};
+---
+<BaseLayout
+  title={d.title}
+  description={d.description}
+  ogType="article"
+  crumbs={[{ name: 'Kennisbank', path: '/kennisbank/' }, { name: d.h1, path }]}
+  schemas={[articleSchema]}
+>
+  <article>
+    <header class="border-b border-line bg-surface">
+      <div class="container-page max-w-3xl py-12 sm:py-16">
+        <h1>{d.h1}</h1>
+        <p class="lead mt-5">{d.intro}</p>
+        <p class="mt-4 text-sm text-muted">Bijgewerkt op <time datetime={(d.updatedDate ?? d.pubDate).toISOString()}>{datum}</time></p>
+      </div>
+    </header>
+    <div class="container-page max-w-3xl pb-8">
+      <div class="prose-fd">
+        <Content />
+      </div>
+      {dienst && (
+        <p class="mt-10 rounded-card bg-surface p-5">
+          Meer weten? Bekijk onze pagina over <a href={`/diensten/${dienst.slug}/`} class="font-semibold text-secondary">{dienst.h1.toLowerCase()}</a>.
+        </p>
+      )}
+    </div>
+  </article>
+  <CtaBlock aanspreek={d.aanspreek} />
+</BaseLayout>

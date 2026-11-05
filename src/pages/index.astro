@@ -1,0 +1,143 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import ChatDemo from '../components/ChatDemo.astro';
+import Bubbles from '../components/Bubbles.astro';
+import GlasFeature from '../components/GlasFeature.astro';
+import TrustPoints from '../components/TrustPoints.astro';
+import ServiceCards from '../components/ServiceCards.astro';
+import Steps from '../components/Steps.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
+import VerticalVideo from '../components/VerticalVideo.astro';
+import ReviewsSection from '../components/ReviewsSection.astro';
+import FaqList from '../components/FaqList.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import { whatsappUrl } from '../config/site';
+import { actieveDiensten } from '../data/diensten';
+import { plaatsen } from '../data/plaatsen';
+import { homeFaq, homeSteps } from '../data/home';
+import { projectenMetFoto, heeftFotos } from '../data/projecten';
+import { videos, videoSrc } from '../data/videos';
+
+const homeVideo = videos[0];
+import { faqSchema } from '../lib/schema';
+
+const voorWie = ['praktijkschoonmaak', 'kantoorschoonmaak', 'vve-trappenhuis-schoonmaak', 'eindschoonmaak-diepteschoonmaak']
+  .map((slug) => actieveDiensten.find((d) => d.slug === slug))
+  .filter((d) => d !== undefined);
+const overig = actieveDiensten.filter((d) => !voorWie.includes(d));
+
+const title = 'Glazenwasser en schoonmaakbedrijf Twente | F&D';
+const description =
+  'Glazenwasser en schoonmaakbedrijf in Twente voor woningen, praktijken, kantoren en VvE’s. Antwoord binnen 1 minuut en een vaste prijs vooraf.';
+---
+<BaseLayout title={title} description={description} schemas={[faqSchema(homeFaq)]}>
+  <!-- Hero: the promise, proven by an example chat -->
+  <section class="relative overflow-hidden bg-primary text-white">
+    <Bubbles />
+    <div class="container-page relative grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.15fr_1fr] lg:py-20">
+      <div>
+        <h1 class="text-white"><span class="wipe inline-block">Snel antwoord, vaste prijs vooraf, en de eigenaar kent uw naam.</span></h1>
+        <p class="mt-6 max-w-[48ch] text-lg text-white/85 sm:text-xl">
+          Glazenwasser en schoonmaak voor woningen, praktijken, kantoren en VvE’s in Twente. Stuur een appje met een foto, dan weet u snel waar u aan toe bent.
+        </p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button href={whatsappUrl()} variant="whatsapp" size="lg" icon="whatsapp" external pulse data-cta="hero-whatsapp">App ons</Button>
+          <Button href="/offerte/" variant="accent" size="lg" data-cta="hero-offerte">Offerte aanvragen</Button>
+        </div>
+        <div class="mt-8">
+          <TrustPoints light />
+        </div>
+      </div>
+      <ChatDemo />
+    </div>
+  </section>
+
+  <GlasFeature />
+
+  <!-- Voor wie -->
+  <section class="section" aria-labelledby="voor-wie">
+    <div class="container-page" data-reveal>
+      <h2 id="voor-wie" class="wave">Voor wie wij schoonmaken</h2>
+      <p class="lead mt-4">Praktijken, kleine kantoren, VvE’s en particulieren met een duidelijke klus. Geen grote organisatie, wel korte lijnen.</p>
+      <div class="mt-10">
+        <ServiceCards items={voorWie} />
+      </div>
+      {
+        overig.length > 0 && (
+          <p class="mt-6 text-muted">
+            Ook:{' '}
+            {overig.map((d, i) => (
+              <>
+                {i > 0 && ', '}
+                <a href={`/diensten/${d.slug}/`} class="font-semibold text-secondary">
+                  {d.kort}
+                </a>
+              </>
+            ))}
+            .
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- Hoe het werkt -->
+  <section class="section border-t border-line" aria-labelledby="hoe-het-werkt">
+    <div class="container-page" data-reveal>
+      <h2 id="hoe-het-werkt" class="wave">Zo werkt een aanvraag</h2>
+      <div class="mt-12"><Steps steps={homeSteps} /></div>
+    </div>
+  </section>
+
+  <!-- Voor / na + video -->
+  {heeftFotos && (
+  <section class="section" aria-labelledby="voor-na">
+    <div class="container-page" data-reveal>
+      <h2 id="voor-na" class="wave">Voor en na</h2>
+      <p class="lead mt-4">Schuif over de foto om het verschil te zien. Alleen eigen werk, met toestemming van de klant.</p>
+      <div class="mt-10 grid gap-6 lg:grid-cols-[1fr_auto]">
+        <div class="grid gap-6 sm:grid-cols-2">
+          {projectenMetFoto.slice(0, 2).map((p, i) => <BeforeAfter project={p} index={i} />)}
+        </div>
+        {homeVideo && <VerticalVideo {...videoSrc(homeVideo)} title={homeVideo.titel} caption={homeVideo.titel} />}
+      </div>
+      <p class="mt-8">
+        <a href="/projecten/" class="font-semibold text-secondary underline">Meer voor en na</a>
+      </p>
+    </div>
+  </section>
+  )}
+
+  <ReviewsSection />
+
+  <!-- Werkgebied -->
+  <section class="section bg-surface" aria-labelledby="werkgebied">
+    <div class="container-page grid gap-8 lg:grid-cols-[1fr_1.6fr] lg:items-start">
+      <div data-reveal>
+        <h2 id="werkgebied" class="wave">Werkgebied</h2>
+        <p class="lead mt-4">Vanuit Oldenzaal in heel Twente.</p>
+      </div>
+      <ul class="grid grid-cols-2 gap-x-8 border-t border-line-strong sm:grid-cols-3" data-stagger>
+        {
+          plaatsen.map((p) => (
+            <li class="border-b border-line-strong">
+              <a href={`/werkgebied/${p.slug}/`} class="block py-3 font-display text-lg font-bold text-primary no-underline hover:underline" style="font-stretch: 85%">
+                {p.naam}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" aria-label="Veelgestelde vragen">
+    <div class="container-page max-w-3xl">
+      <FaqList faqs={homeFaq} />
+    </div>
+  </section>
+
+  <CtaBlock />
+</BaseLayout>

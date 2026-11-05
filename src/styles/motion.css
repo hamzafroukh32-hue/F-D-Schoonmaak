@@ -1,0 +1,323 @@
+/*
+ * Motion. Everything here is switched off for prefers-reduced-motion (bottom of file).
+ * Reveal-on-scroll only hides content when JS runs (html.js), so the site works without JS.
+ */
+
+/* ---------- Reveal on scroll ---------- */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.js [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+.js [data-stagger] > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.js [data-stagger].is-visible > * {
+  opacity: 1;
+  transform: none;
+}
+.js [data-stagger].is-visible > *:nth-child(2) { transition-delay: 0.08s; }
+.js [data-stagger].is-visible > *:nth-child(3) { transition-delay: 0.16s; }
+.js [data-stagger].is-visible > *:nth-child(4) { transition-delay: 0.24s; }
+.js [data-stagger].is-visible > *:nth-child(5) { transition-delay: 0.32s; }
+.js [data-stagger].is-visible > *:nth-child(6) { transition-delay: 0.4s; }
+.js [data-stagger].is-visible > *:nth-child(7) { transition-delay: 0.48s; }
+.js [data-stagger].is-visible > *:nth-child(n + 8) { transition-delay: 0.56s; }
+
+/* ---------- Squeegee wipe: headline is "wiped clean" from left to right ---------- */
+.wipe {
+  position: relative;
+  animation: wipe-reveal 1.1s cubic-bezier(0.65, 0, 0.35, 1) 0.15s both;
+}
+.wipe::after {
+  content: '';
+  position: absolute;
+  top: -4%;
+  bottom: -4%;
+  width: 10px;
+  border-radius: 6px;
+  background: linear-gradient(var(--color-brand-cyan-light), var(--color-brand-cyan));
+  box-shadow: 0 0 24px 6px rgb(30 192 221 / 0.55);
+  transform: translateX(-100%);
+  animation: squeegee 1.1s cubic-bezier(0.65, 0, 0.35, 1) 0.15s both;
+}
+@keyframes wipe-reveal {
+  from { clip-path: inset(-10% 100% -10% 0); }
+  to { clip-path: inset(-10% -2% -10% 0); }
+}
+@keyframes squeegee {
+  0% { left: 0; opacity: 1; }
+  88% { left: 100%; opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* Heading underline wave (logo swoosh), drawn when its section reveals */
+.wave {
+  position: relative;
+  padding-bottom: 0.35em;
+}
+.wave::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 4.5rem;
+  height: 0.5rem;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 8'%3E%3Cpath d='M1 5c8-4 14-4 22 0s14 4 22 0 14-4 26 0' fill='none' stroke='%2313a4c7' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") left / contain no-repeat;
+  transform-origin: left;
+  transform: scaleX(1);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.25s;
+}
+.js [data-reveal]:not(.is-visible) .wave::after {
+  transform: scaleX(0);
+}
+
+/* ---------- Bubbles + sparkles ---------- */
+.bubble {
+  position: absolute;
+  bottom: -40px;
+  border-radius: 999px;
+  border: 1.5px solid rgb(255 255 255 / 0.45);
+  background: radial-gradient(circle at 30% 30%, rgb(255 255 255 / 0.55), rgb(30 192 221 / 0.18) 45%, transparent 70%);
+  animation: bubble-rise linear infinite;
+}
+@keyframes bubble-rise {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translate(14px, -50vh) scale(1); }
+  90% { opacity: 0.9; }
+  100% { transform: translate(-10px, -100vh) scale(1.1); opacity: 0; }
+}
+.bubbles-light .bubble {
+  border-color: rgb(19 164 199 / 0.35);
+  background: radial-gradient(circle at 30% 30%, rgb(255 255 255 / 0.9), rgb(30 192 221 / 0.14) 45%, transparent 70%);
+}
+.sparkle {
+  position: absolute;
+  color: var(--color-brand-cyan-light);
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0.2; }
+  50% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+
+/* ---------- Hero chat ---------- */
+.chat-float {
+  animation: float 6s ease-in-out 3.5s infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.chat-in {
+  opacity: 0;
+  animation: pop-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) var(--d, 0s) forwards;
+  transform-origin: var(--o, left) bottom;
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -10px rgb(2 31 69 / 0.6);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.btn-shine:hover::after {
+  transition: transform 0.7s ease;
+  transform: translateX(120%);
+}
+.btn-pulse {
+  animation: pulse-ring 2.8s ease-out 2.6s infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgb(14 122 64 / 0.55); }
+  70% { box-shadow: 0 0 0 16px rgb(14 122 64 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(14 122 64 / 0); }
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+}
+.site-header .logo {
+  transition: transform 0.3s ease;
+  transform-origin: left center;
+}
+.site-header.is-scrolled {
+  box-shadow: 0 6px 24px -14px rgb(2 31 69 / 0.5);
+}
+.site-header.is-scrolled .logo {
+  transform: scale(0.86);
+}
+.logo-link:hover .logo {
+  animation: logo-wiggle 0.6s ease;
+}
+@keyframes logo-wiggle {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: -3deg; }
+  60% { rotate: 2deg; }
+}
+
+/* ---------- Rows (services, places, articles) ---------- */
+.row-link {
+  position: relative;
+  isolation: isolate;
+}
+.row-link::before {
+  content: '';
+  position: absolute;
+  inset: 0 -0.75rem;
+  z-index: -1;
+  border-radius: var(--radius-card);
+  background: var(--color-secondary-soft);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.row-link:hover::before,
+.row-link:focus-visible::before {
+  transform: scaleX(1);
+}
+.row-link .row-icon {
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4), background-color 0.3s;
+}
+.row-link:hover .row-icon {
+  transform: rotate(-10deg) scale(1.12);
+  background: var(--color-brand-cyan);
+  color: #fff;
+}
+
+/* ---------- Steps timeline: connector draws in ---------- */
+.step-line {
+  transform-origin: top;
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s;
+}
+@media (min-width: 768px) {
+  .step-line {
+    transform-origin: left;
+  }
+}
+.js [data-reveal]:not(.is-visible) .step-line {
+  transform: scale(0, 0);
+}
+.step-num {
+  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.5);
+}
+.js [data-reveal]:not(.is-visible) .step-num {
+  transform: scale(0.3);
+}
+
+/* ---------- Price list: dotted leaders run out ---------- */
+.leader {
+  transform-origin: left;
+  transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s;
+}
+.js [data-stagger]:not(.is-visible) .leader {
+  transform: scaleX(0);
+}
+
+/* ---------- FAQ: smooth open ---------- */
+:root {
+  interpolate-size: allow-keywords;
+}
+.faq details::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size 0.35s ease,
+    content-visibility 0.35s allow-discrete;
+}
+.faq details[open]::details-content {
+  block-size: auto;
+}
+
+/* ---------- Sticky mobile bar slides up ---------- */
+.sticky-bar {
+  animation: bar-up 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.8s both;
+}
+@keyframes bar-up {
+  from { transform: translateY(110%); }
+  to { transform: none; }
+}
+
+/* ---------- CTA block background shimmer ---------- */
+.cta-shimmer {
+  background:
+    radial-gradient(60rem 30rem at var(--x, 80%) -20%, rgb(30 192 221 / 0.35), transparent 60%),
+    var(--color-primary);
+  animation: cta-drift 12s ease-in-out infinite alternate;
+}
+@property --x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 80%;
+}
+@keyframes cta-drift {
+  from { --x: 85%; }
+  to { --x: 15%; }
+}
+
+/* ---------- Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal],
+  .js [data-stagger] > *,
+  .chat-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .wipe,
+  .wipe::after,
+  .bubble,
+  .sparkle,
+  .chat-float,
+  .btn-pulse,
+  .sticky-bar,
+  .cta-shimmer {
+    animation: none !important;
+  }
+  .wipe::after,
+  .bubble,
+  .sparkle {
+    display: none;
+  }
+  .js [data-reveal]:not(.is-visible) .step-line,
+  .js [data-reveal]:not(.is-visible) .step-num,
+  .js [data-stagger]:not(.is-visible) .leader,
+  .js [data-reveal]:not(.is-visible) .wave::after {
+    transform: none;
+  }
+}

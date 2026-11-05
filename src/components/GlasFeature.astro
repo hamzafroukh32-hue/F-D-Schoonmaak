@@ -1,0 +1,40 @@
+---
+// Homepage feature: window cleaning as the easy first step. No prices here; those live on /prijzen/ and /offerte/.
+import Button from './Button.astro';
+import Bubbles from './Bubbles.astro';
+import Icon from './Icon.astro';
+
+const punten = [
+  { titel: 'Streeploos', tekst: 'Met osmosewater, ook op hogere verdiepingen.' },
+  { titel: 'Woning of bedrijf', tekst: 'Van appartement tot winkelpand of kantoor.' },
+  { titel: 'Vaste ronde', tekst: 'Elke 4, 6 of 8 weken, of een losse beurt.' },
+];
+---
+<section class="relative overflow-hidden bg-secondary-soft" aria-labelledby="glas-home">
+  <Bubbles tone="light" />
+  <div class="container-page relative grid gap-10 py-16 sm:py-20 lg:grid-cols-[1.2fr_1fr] lg:items-center" data-reveal>
+    <div>
+      <h2 id="glas-home" class="wave">Glazenwasser in Twente</h2>
+      <p class="lead mt-4 text-ink">Streeploze ramen voor je woning of bedrijfspand. Bereken je prijs in een minuut, en tevreden? Dan doen we daarna ook graag je schoonmaak.</p>
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Button href="/offerte/?dienst=glas" variant="accent" size="lg" data-cta="home-glas-offerte">Bereken je prijs</Button>
+        <Button href="/diensten/glasbewassing-particulier/" variant="outline" size="lg" data-cta="home-glas-meer">Meer over glasbewassing</Button>
+      </div>
+    </div>
+    <ul class="grid gap-3" data-stagger>
+      {
+        punten.map((p) => (
+          <li class="flex items-center gap-4 rounded-card border border-secondary-line bg-paper p-4">
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-white">
+              <Icon name="check" class="h-6 w-6" />
+            </span>
+            <span>
+              <strong class="block font-display text-lg text-primary">{p.titel}</strong>
+              <span class="text-muted">{p.tekst}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

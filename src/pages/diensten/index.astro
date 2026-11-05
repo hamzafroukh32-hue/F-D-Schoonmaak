@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import ServiceCards from '../../components/ServiceCards.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { actieveDiensten } from '../../data/diensten';
+
+const zakelijk = actieveDiensten.filter((d) => d.doelgroep === 'zakelijk');
+const particulier = actieveDiensten.filter((d) => d.doelgroep === 'particulier');
+---
+<BaseLayout
+  title="Schoonmaakdiensten in Twente | F&D Schoonmaak"
+  description="Praktijkschoonmaak, kantoorschoonmaak, VvE-trappenhuizen, eindschoonmaak en Airbnb-schoonmaak in Twente. Bekijk wat we doen en vraag een offerte aan."
+  crumbs={[{ name: 'Diensten', path: '/diensten/' }]}
+>
+  <PageHero
+    title="Onze schoonmaakdiensten"
+    intro={['Zakelijk of particulier: u weet vooraf wat we doen en wat het kost. Kies hieronder uw situatie.']}
+  />
+
+  <section class="section" aria-labelledby="zakelijk">
+    <div class="container-page">
+      <h2 id="zakelijk">Zakelijk</h2>
+      <p class="mt-3 text-muted">Voor praktijken, kantoren en VvE’s. Vaste dag, vaste prijs, vast aanspreekpunt.</p>
+      <div class="mt-8"><ServiceCards items={zakelijk} /></div>
+    </div>
+  </section>
+
+  <section class="section bg-surface" aria-labelledby="particulier">
+    <div class="container-page">
+      <h2 id="particulier">Particulier</h2>
+      <p class="mt-3 text-muted">Eén duidelijke klus met een vaste prijs vooraf. Stuur een foto en je weet waar je aan toe bent.</p>
+      <div class="mt-8"><ServiceCards items={particulier} /></div>
+    </div>
+  </section>
+
+  <CtaBlock />
+</BaseLayout>

@@ -1,0 +1,34 @@
+---
+import { site, whatsappUrl, telUrl, mailUrl } from '../config/site';
+import Icon from './Icon.astro';
+---
+<div class="space-y-3">
+  <a
+    href={whatsappUrl()}
+    target="_blank"
+    rel="noopener"
+    class="flex min-h-20 items-center gap-4 rounded-card bg-whatsapp p-5 text-white no-underline shadow-card hover:bg-whatsapp-hover"
+    data-cta="contact-whatsapp"
+  >
+    <Icon name="whatsapp" class="h-9 w-9 shrink-0" />
+    <span>
+      <strong class="block font-display text-xl">App ons</strong>
+      <span class="text-white">Antwoord {site.responseTime}</span>
+    </span>
+  </a>
+  <a
+    href={telUrl}
+    class="flex min-h-20 items-center gap-4 rounded-card bg-primary p-5 text-white no-underline shadow-card hover:bg-primary-soft"
+    data-cta="contact-bel"
+  >
+    <Icon name="phone" class="h-8 w-8 shrink-0" />
+    <span>
+      <strong class="block font-display text-xl">Bel {site.contact.phoneDisplay}</strong>
+      <span class="text-white">{site.openingHours.label}</span>
+    </span>
+  </a>
+  <a href={mailUrl} class="flex min-h-14 items-center gap-3 rounded-card border border-line bg-paper px-5 py-3 text-primary no-underline hover:bg-surface">
+    <Icon name="mail" class="h-5 w-5 shrink-0" />
+    <span class="break-all font-semibold">{site.contact.email}</span>
+  </a>
+</div>

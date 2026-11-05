@@ -1,0 +1,152 @@
+---
+/**
+ * Quote form, sent via Web3Forms (see src/lib/forms.ts); submissions arrive by e-mail.
+ * - Honeypot field "botcheck" filters spam.
+ * - Phone OR e-mail is required (enforced with JS; fields stay optional without JS).
+ * - Hidden fields capture UTM parameters, landing page and referrer (filled from sessionStorage).
+ * Photos: customers send them via WhatsApp (file uploads need a paid form plan).
+ */
+import { formEndpoint, formAccessKey } from '../lib/forms';
+import { absoluteUrl, whatsappUrl } from '../config/site';
+import { actieveDiensten } from '../data/diensten';
+import { plaatsen } from '../data/plaatsen';
+
+const bronnen = ['Google', 'Google Maps', 'Instagram', 'TikTok', 'Facebook', 'Via iemand die ik ken', 'Bus of reclame', 'Anders', 'Zeg ik liever niet'];
+const utmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+
+const field = 'mt-1 block w-full min-h-12 rounded-button border border-line bg-paper px-4 py-3 text-ink placeholder:text-muted/70 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30';
+const labelCls = 'block font-semibold text-primary';
+---
+<form
+  name="offerte"
+  method="POST"
+  action={formEndpoint}
+  class="card space-y-5 p-6 sm:p-8"
+  id="offerte-form"
+  novalidate
+>
+  <input type="hidden" name="access_key" value={formAccessKey} />
+  <input type="hidden" name="subject" value="Nieuwe aanvraag via het contactformulier" />
+  <input type="hidden" name="from_name" value="Website F&amp;D Schoonmaak" />
+  <input type="hidden" name="redirect" value={absoluteUrl('/bedankt/')} />
+  <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  {utmFields.map((n) => <input type="hidden" name={n} data-track={n} />)}
+  <input type="hidden" name="landingspagina" data-track="landingspagina" />
+  <input type="hidden" name="verwijzer" data-track="verwijzer" />
+  <input type="hidden" name="verzonden_vanaf" data-track="verzonden_vanaf" />
+
+  <div>
+    <label for="f-naam" class={labelCls}>Naam <span class="text-muted font-normal">(verplicht)</span></label>
+    <input id="f-naam" name="naam" type="text" autocomplete="name" required class={field} />
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="f-plaats" class={labelCls}>Plaats <span class="text-muted font-normal">(verplicht)</span></label>
+      <input id="f-plaats" name="plaats" type="text" list="plaatsen-lijst" autocomplete="address-level2" required class={field} />
+      <datalist id="plaatsen-lijst">
+        {plaatsen.map((p) => <option value={p.naam} />)}
+      </datalist>
+    </div>
+    <div>
+      <label for="f-dienst" class={labelCls}>Soort dienst <span class="text-muted font-normal">(verplicht)</span></label>
+      <select id="f-dienst" name="dienst" required class={field}>
+        <option value="">Maak een keuze</option>
+        {actieveDiensten.map((d) => <option value={d.slug}>{d.formLabel}</option>)}
+        <option value="anders">Anders</option>
+      </select>
+    </div>
+  </div>
+
+  <fieldset class="rounded-card border border-line p-4" aria-describedby="contact-hint">
+    <legend class="px-1 font-semibold text-primary">Hoe kunnen we u bereiken?</legend>
+    <p id="contact-hint" class="text-sm text-muted">Vul uw telefoonnummer óf e-mailadres in. Eén van de twee is genoeg.</p>
+    <div class="mt-3 grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="f-tel" class={labelCls}>Telefoon</label>
+        <input id="f-tel" name="telefoon" type="tel" inputmode="tel" autocomplete="tel" class={field} />
+      </div>
+      <div>
+        <label for="f-email" class={labelCls}>E-mail</label>
+        <input id="f-email" name="email" type="email" autocomplete="email" class={field} />
+      </div>
+    </div>
+    <p id="contact-error" class="mt-2 hidden text-sm font-semibold text-danger" role="alert">Vul een telefoonnummer of e-mailadres in.</p>
+  </fieldset>
+
+  <div>
+    <label for="f-bericht" class={labelCls}>Bericht <span class="text-muted font-normal">(optioneel)</span></label>
+    <textarea id="f-bericht" name="bericht" rows="4" class={field} placeholder="Bijvoorbeeld: kantoor van 150 m², 2 toiletten, 1x per week"></textarea>
+  </div>
+
+  <p class="rounded-card bg-surface p-4 text-[0.95rem] text-muted">
+    Een foto van de ruimte helpt ons om sneller een prijs te geven. <a href={whatsappUrl('Hallo F&D Schoonmaak, hierbij een foto voor mijn aanvraag: ')} target="_blank" rel="noopener" class="font-semibold text-secondary">Stuur hem via WhatsApp</a>.
+  </p>
+
+  <div>
+    <label for="f-bron" class={labelCls}>Hoe heeft u ons gevonden? <span class="text-muted font-normal">(verplicht)</span></label>
+    <select id="f-bron" name="gevonden_via" required class={field}>
+      <option value="">Maak een keuze</option>
+      {bronnen.map((b) => <option value={b}>{b}</option>)}
+    </select>
+  </div>
+
+  <button type="submit" class="inline-flex min-h-14 w-full items-center justify-center rounded-button bg-accent px-6 text-lg font-bold text-accent-ink shadow-card hover:bg-accent-hover">
+    Offerte aanvragen
+  </button>
+  <p class="font-semibold" data-form-status role="status" hidden></p>
+  <p class="text-sm text-muted">
+    We gebruiken uw gegevens alleen om uw aanvraag te beantwoorden. Lees onze <a href="/privacyverklaring/" class="text-secondary">privacyverklaring</a>.
+  </p>
+</form>
+
+<script>
+  import { verstuurFormulier } from '../lib/forms';
+
+  const form = document.getElementById('offerte-form') as HTMLFormElement | null;
+  if (form) {
+    // Prefill from query string (?dienst=slug&plaats=Naam)
+    const params = new URLSearchParams(location.search);
+    const dienst = form.querySelector<HTMLSelectElement>('#f-dienst');
+    const plaats = form.querySelector<HTMLInputElement>('#f-plaats');
+    if (dienst && params.get('dienst')) dienst.value = params.get('dienst') ?? '';
+    if (plaats && params.get('plaats')) plaats.value = params.get('plaats') ?? '';
+
+    // Tracking fields from sessionStorage (written in BaseLayout)
+    let stored: Record<string, string> = {};
+    try {
+      stored = JSON.parse(sessionStorage.getItem('fd_tracking') || '{}');
+    } catch {
+      stored = {};
+    }
+    form.querySelectorAll<HTMLInputElement>('[data-track]').forEach((input) => {
+      const key = input.dataset.track!;
+      input.value = key === 'verzonden_vanaf' ? location.pathname : stored[key] || params.get(key) || '';
+    });
+
+    // Phone OR e-mail required
+    const tel = form.querySelector<HTMLInputElement>('#f-tel')!;
+    const email = form.querySelector<HTMLInputElement>('#f-email')!;
+    const err = form.querySelector<HTMLElement>('#contact-error')!;
+    const checkContact = () => {
+      const ok = tel.value.trim() !== '' || email.value.trim() !== '';
+      tel.setCustomValidity(ok ? '' : 'Vul een telefoonnummer of e-mailadres in.');
+      err.classList.toggle('hidden', ok);
+      return ok;
+    };
+    tel.addEventListener('input', checkContact);
+    email.addEventListener('input', checkContact);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const contactOk = checkContact();
+      if (!contactOk || !form.checkValidity()) {
+        form.reportValidity();
+        const firstInvalid = form.querySelector<HTMLElement>(':invalid');
+        firstInvalid?.focus();
+        return;
+      }
+      verstuurFormulier(form, form.querySelector<HTMLElement>('[data-form-status]'));
+    });
+  }
+</script>

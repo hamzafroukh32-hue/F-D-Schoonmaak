@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import { whatsappUrl } from '../config/site';
+---
+<BaseLayout title="Pagina niet gevonden | F&D Schoonmaak" description="Deze pagina bestaat niet (meer). Ga terug naar de homepage of neem contact op." noindex>
+  <section class="section">
+    <div class="container-page max-w-2xl text-center">
+      <p class="font-display text-6xl font-extrabold text-secondary">404</p>
+      <h1 class="mt-4">Deze pagina is al opgeruimd</h1>
+      <p class="lead mt-4">De pagina die u zoekt bestaat niet (meer). Misschien helpt een van deze links.</p>
+      <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <Button href="/" variant="primary">Naar home</Button>
+        <Button href="/diensten/" variant="outline">Bekijk diensten</Button>
+        <Button href={whatsappUrl()} variant="whatsapp" icon="whatsapp" external>App ons</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

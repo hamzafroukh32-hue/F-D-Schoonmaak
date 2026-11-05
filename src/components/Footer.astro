@@ -1,0 +1,71 @@
+---
+import { site, telUrl, mailUrl, whatsappUrl } from '../config/site';
+import { actieveDiensten } from '../data/diensten';
+import { plaatsen } from '../data/plaatsen';
+import Logo from './Logo.astro';
+
+const year = new Date().getFullYear();
+const socials = Object.entries(site.social).filter(([, url]) => Boolean(url)) as [string, string][];
+const socialLabels: Record<string, string> = { instagram: 'Instagram', tiktok: 'TikTok', facebook: 'Facebook', linkedin: 'LinkedIn' };
+---
+<footer class="bg-primary-strong pb-28 text-white/85 md:pb-0">
+  <div class="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+    <div>
+      <span class="inline-block rounded-card bg-white p-3"><Logo size="footer" /></span>
+      <p class="mt-4 text-[0.95rem]">Snel antwoord, vaste prijs vooraf, en de eigenaar kent uw naam.</p>
+      <address class="mt-4 text-[0.95rem] not-italic">
+        {site.address.street}<br />
+        {site.address.postalCode ? `${site.address.postalCode} ` : ''}{site.address.city}
+      </address>
+    </div>
+
+    <div>
+      <h2 class="mb-4 text-base font-bold text-white">Diensten</h2>
+      <ul class="space-y-2 text-[0.95rem]">
+        {actieveDiensten.map((d) => <li><a href={`/diensten/${d.slug}/`} class="text-white/85 no-underline hover:text-white hover:underline">{d.kort}</a></li>)}
+        <li><a href="/prijzen/" class="text-white/85 no-underline hover:text-white hover:underline">Prijzen</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="mb-4 text-base font-bold text-white">Werkgebied</h2>
+      <ul class="space-y-2 text-[0.95rem]">
+        {plaatsen.map((p) => <li><a href={`/werkgebied/${p.slug}/`} class="text-white/85 no-underline hover:text-white hover:underline">Schoonmaakbedrijf {p.naam}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="mb-4 text-base font-bold text-white">Contact</h2>
+      <ul class="space-y-2 text-[0.95rem]">
+        <li><a href={telUrl} class="text-white no-underline hover:underline">{site.contact.phoneDisplay}</a></li>
+        <li><a href={whatsappUrl()} target="_blank" rel="noopener" class="text-white no-underline hover:underline">WhatsApp</a></li>
+        <li><a href={mailUrl} class="break-all text-white no-underline hover:underline">{site.contact.email}</a></li>
+        <li>{site.openingHours.label}</li>
+      </ul>
+      {socials.length > 0 && (
+        <ul class="mt-4 flex flex-wrap gap-3 text-[0.95rem]">
+          {socials.map(([key, url]) => <li><a href={url} target="_blank" rel="noopener" class="text-white hover:underline">{socialLabels[key]}</a></li>)}
+        </ul>
+      )}
+      <ul class="mt-6 space-y-2 text-[0.95rem]">
+        <li><a href="/over-ons/" class="text-white/85 no-underline hover:text-white hover:underline">Over ons</a></li>
+        <li><a href="/vacatures/" class="text-white/85 no-underline hover:text-white hover:underline">Vacatures</a></li>
+        <li><a href="/kennisbank/" class="text-white/85 no-underline hover:text-white hover:underline">Kennisbank</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-white/15">
+    <div class="container-page flex flex-col gap-2 py-6 text-sm text-white/75 sm:flex-row sm:items-center sm:justify-between">
+      <dl class="flex flex-wrap gap-x-6 gap-y-1">
+        <div><dt class="sr-only">Copyright</dt><dd>© {year} {site.name}</dd></div>
+        <div class="flex gap-1"><dt>KvK</dt><dd>{site.legal.kvk}</dd></div>
+        {site.legal.btw && <div class="flex gap-1"><dt>Btw</dt><dd>{site.legal.btw}</dd></div>}
+      </dl>
+      <ul class="flex gap-4">
+        <li><a href="/privacyverklaring/" class="text-white/85 hover:text-white">Privacyverklaring</a></li>
+        <li><a href="/algemene-voorwaarden/" class="text-white/85 hover:text-white">Algemene voorwaarden</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>

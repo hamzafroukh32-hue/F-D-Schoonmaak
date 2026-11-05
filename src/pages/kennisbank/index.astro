@@ -1,0 +1,34 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+
+const artikelen = (await getCollection('kennisbank')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+<BaseLayout
+  title="Kennisbank schoonmaak | F&D Schoonmaak"
+  description="Praktische artikelen over schoonmaak: wat kost kantoorschoonmaak, hoe vaak een praktijk schoonmaken en een eindschoonmaak checklist."
+  crumbs={[{ name: 'Kennisbank', path: '/kennisbank/' }]}
+>
+  <PageHero
+    title="Tips en uitleg over schoonmaak"
+    intro={['Eerlijke antwoorden op vragen die we vaak krijgen. Zonder verkooppraatjes.']}
+    showCtas={false}
+  />
+  <section class="section" aria-label="Artikelen">
+    <div class="container-page">
+      <ul class="max-w-3xl border-t border-line" data-stagger>
+        {artikelen.map((a) => (
+          <li class="border-b border-line">
+            <a href={`/kennisbank/${a.id}/`} class="row-link group block py-8 no-underline">
+              <h2 class="text-[2rem]">{a.data.h1}</h2>
+              <p class="mt-3 max-w-[62ch] text-muted">{a.data.intro}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+  <CtaBlock />
+</BaseLayout>

@@ -1,0 +1,102 @@
+---
+import { site, telUrl } from '../config/site';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+import { heeftFotos } from '../data/projecten';
+
+const glasHref = '/diensten/glasbewassing-particulier/';
+// `wide`: only in the desktop bar on extra-wide screens (always in the mobile menu)
+const nav: { href: string; label: string; wide?: boolean }[] = [
+  { href: glasHref, label: 'Glasbewassing' },
+  { href: '/diensten/', label: 'Schoonmaak' },
+  { href: '/werkgebied/', label: 'Werkgebied' },
+  { href: '/prijzen/', label: 'Prijzen' },
+  { href: '/over-ons/', label: 'Over ons', wide: true },
+  { href: '/kennisbank/', label: 'Kennisbank', wide: true },
+];
+if (heeftFotos) nav.splice(4, 0, { href: '/projecten/', label: 'Voor & na' });
+const current = Astro.url.pathname;
+const isGlasPage = current.startsWith('/diensten/glasbewassing') || current.endsWith('/glazenwasser/');
+const isActive = (href: string) => (href === glasHref ? isGlasPage : current.startsWith(href) && !isGlasPage);
+---
+<header class="site-header sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/85" data-header>
+  <div class="container-page flex h-[72px] items-center justify-between gap-4 lg:h-[88px]">
+    <a href="/" class="logo-link rounded-lg no-underline" title="Naar de homepage">
+      <Logo eager />
+    </a>
+
+    <nav aria-label="Hoofdmenu" class="hidden lg:block">
+      <ul class="flex items-center gap-1">
+        {
+          nav.map((item) => (
+            <li class:list={[item.wide && 'hidden xl:block']}>
+              <a
+                href={item.href}
+                class:list={[
+                  'rounded-lg px-2.5 py-2 text-[0.95rem] font-medium whitespace-nowrap no-underline transition-colors hover:bg-surface hover:text-primary',
+                  isActive(item.href) ? 'text-primary' : 'text-muted',
+                ]}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a
+        href={telUrl}
+        class="hidden items-center gap-2 rounded-lg px-3 py-2 font-semibold whitespace-nowrap text-primary no-underline hover:bg-surface sm:inline-flex lg:hidden 2xl:inline-flex"
+        data-cta="header-bel"
+      >
+        <Icon name="phone" class="h-4 w-4" />
+        <span>{site.contact.phoneDisplay}</span>
+      </a>
+      <a
+        href="/offerte/"
+        class="hidden min-h-11 items-center rounded-button bg-accent px-4 py-2 font-semibold whitespace-nowrap text-accent-ink no-underline shadow-card hover:bg-accent-hover md:inline-flex"
+        data-cta="header-offerte"
+      >
+        Offerte aanvragen
+      </a>
+
+      <details class="group relative lg:hidden">
+        <summary
+          class="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-lg text-primary hover:bg-surface [&::-webkit-details-marker]:hidden"
+          aria-label="Menu openen"
+        >
+          <Icon name="menu" class="h-6 w-6 group-open:hidden" />
+          <Icon name="close" class="hidden h-6 w-6 group-open:block" />
+        </summary>
+        <nav
+          aria-label="Mobiel menu"
+          class="fixed inset-x-0 top-[72px] max-h-[calc(100dvh-72px)] overflow-y-auto border-b border-line bg-paper px-4 pt-2 pb-6 shadow-lift"
+        >
+          <ul class="divide-y divide-line">
+            {
+              nav.map((item) => (
+                <li>
+                  <a href={item.href} class="block py-4 text-lg font-semibold text-primary no-underline">
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li>
+              <a href="/offerte/" class="block py-4 text-lg font-semibold text-primary no-underline">Offerte berekenen</a>
+            </li>
+            <li>
+              <a href="/contact/" class="block py-4 text-lg font-semibold text-primary no-underline">Contact</a>
+            </li>
+            <li>
+              <a href="/vacatures/" class="block py-4 text-lg font-semibold text-primary no-underline">Vacatures</a>
+            </li>
+          </ul>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>

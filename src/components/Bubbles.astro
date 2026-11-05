@@ -1,0 +1,41 @@
+---
+// Decorative soap bubbles + sparkles (from the logo). Purely visual, hidden from assistive tech.
+interface Props {
+  sparkles?: boolean;
+  tone?: 'dark' | 'light'; // background the bubbles sit on
+}
+const { sparkles = true, tone = 'dark' } = Astro.props;
+const bubbles = [
+  { left: '6%', size: 18, delay: 0, dur: 11 },
+  { left: '18%', size: 10, delay: 3, dur: 9 },
+  { left: '34%', size: 26, delay: 6, dur: 14 },
+  { left: '52%', size: 12, delay: 1.5, dur: 10 },
+  { left: '67%', size: 20, delay: 4.5, dur: 12 },
+  { left: '81%', size: 9, delay: 2, dur: 8 },
+  { left: '92%', size: 16, delay: 7, dur: 13 },
+];
+const stars = [
+  { top: '14%', left: '4%', size: 18, delay: 0 },
+  { top: '26%', left: '9%', size: 11, delay: 0.8 },
+  { top: '8%', left: '46%', size: 13, delay: 1.6 },
+  { top: '72%', left: '48%', size: 15, delay: 2.2 },
+];
+---
+<div class:list={['pointer-events-none absolute inset-0 overflow-hidden', tone === 'light' && 'bubbles-light']} aria-hidden="true">
+  {
+    bubbles.map((b) => (
+      <span
+        class="bubble"
+        style={`left:${b.left};width:${b.size}px;height:${b.size}px;animation-delay:${b.delay}s;animation-duration:${b.dur}s`}
+      />
+    ))
+  }
+  {
+    sparkles &&
+      stars.map((s) => (
+        <svg class="sparkle" viewBox="0 0 24 24" style={`top:${s.top};left:${s.left};width:${s.size}px;height:${s.size}px;animation-delay:${s.delay}s`}>
+          <path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z" fill="currentColor" />
+        </svg>
+      ))
+  }
+</div>

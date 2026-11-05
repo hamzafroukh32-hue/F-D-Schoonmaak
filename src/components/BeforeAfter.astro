@@ -1,0 +1,58 @@
+---
+import { Picture } from 'astro:assets';
+import type { Project } from '../data/projecten';
+import { withPlaceholders } from '../lib/text';
+
+interface Props {
+  project: Project;
+  index: number;
+}
+const { project, index } = Astro.props;
+const hasPhotos = Boolean(project.voor && project.na);
+const id = `ba-${index}`;
+---
+<figure class="card overflow-hidden p-0">
+  <div class="ba relative aspect-[3/4] overflow-hidden bg-surface-alt" data-ba style="--pos: 50%">
+    {
+      hasPhotos ? (
+        <>
+          <Picture src={project.na!} alt={project.altNa} formats={['avif', 'webp']} widths={[450, 900]} sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+          <div class="absolute inset-0 overflow-hidden" style="clip-path: inset(0 calc(100% - var(--pos)) 0 0)">
+            <Picture src={project.voor!} alt={project.altVoor} formats={['avif', 'webp']} widths={[450, 900]} sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+          </div>
+        </>
+      ) : (
+        <>
+          <div class="absolute inset-0 grid place-items-center bg-secondary-soft text-secondary">
+            <span class="px-6 text-center text-sm font-semibold">Na-foto volgt</span>
+          </div>
+          <div class="absolute inset-0 grid place-items-center overflow-hidden bg-surface-alt text-muted" style="clip-path: inset(0 calc(100% - var(--pos)) 0 0)">
+            <span class="px-6 text-center text-sm font-semibold">Voor-foto volgt</span>
+          </div>
+        </>
+      )
+    }
+    <div class="pointer-events-none absolute inset-y-0 w-1 -translate-x-1/2 bg-white shadow-lift" style="left: var(--pos)" aria-hidden="true">
+      <span class="absolute top-1/2 left-1/2 grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-primary shadow-lift">⇆</span>
+    </div>
+    <span class="absolute top-3 left-3 rounded bg-ink/80 px-2 py-1 text-xs font-semibold text-white">Voor</span>
+    <span class="absolute top-3 right-3 rounded bg-ink/80 px-2 py-1 text-xs font-semibold text-white">Na</span>
+    <label for={id} class="sr-only">Schuif om voor en na te vergelijken: {project.titel}</label>
+    <input id={id} type="range" min="0" max="100" value="50" class="absolute inset-0 h-full w-full cursor-ew-resize opacity-0" data-ba-range />
+  </div>
+  <figcaption class="p-5">
+    <h3 set:html={withPlaceholders(project.titel)} />
+    <p class="mt-1 text-sm text-muted" set:html={withPlaceholders(project.plaats ? `In ${project.plaats}. ${project.omschrijving}` : project.omschrijving)} />
+  </figcaption>
+</figure>
+
+<script>
+  // Before/after slider: maps the range input to a CSS variable.
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((el) => {
+    const range = el.querySelector<HTMLInputElement>('[data-ba-range]');
+    if (!range) return;
+    const update = () => el.style.setProperty('--pos', `${range.value}%`);
+    range.addEventListener('input', update);
+    update();
+  });
+</script>

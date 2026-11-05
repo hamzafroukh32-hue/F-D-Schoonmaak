@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import PriceTeaser from '../components/PriceTeaser.astro';
+import FaqList from '../components/FaqList.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import OfferteCta from '../components/OfferteCta.astro';
+import { prijsfactoren, glasPrijzen, uurtarieven, extraDiensten, formatEuro } from '../data/prijzen';
+
+const eur2 = (n: number) => formatEuro(n, 2);
+const staffel = glasPrijzen.staffel.map((st, i, a) => ({
+  label: st.tot === null ? `Vanaf raam ${(a[i - 1]?.tot ?? 0) + 1}` : `Raam ${i === 0 ? 1 : (a[i - 1].tot ?? 0) + 1} t/m ${st.tot}`,
+  prijs: st.prijs,
+}));
+const toeslagen = [
+  ...glasPrijzen.zijden.filter((z) => z.toeslag > 0),
+  ...glasPrijzen.verdiepingen.filter((v) => v.toeslag > 0),
+  { label: glasPrijzen.ladder.label, toeslag: glasPrijzen.ladder.toeslag },
+  ...glasPrijzen.serre.filter((x) => x.toeslag > 0),
+  ...glasPrijzen.perStuk.map((x) => ({ label: `${x.label} (per stuk)`, toeslag: x.prijs })),
+];
+import { faqSchema } from '../lib/schema';
+
+const faq = [
+  {
+    vraag: 'Waarom tonen jullie prijzen, en anderen niet?',
+    antwoord: 'Omdat u wilt weten waar u aan toe bent voordat u iemand belt. Een “vanaf”-prijs geeft houvast. Uw exacte prijs krijgt u daarna zwart op wit.',
+  },
+  {
+    vraag: 'Is de prijs op deze pagina mijn eindprijs?',
+    antwoord: 'Nee, het is een indicatie. Uw vaste prijs hangt af van de oppervlakte, het aantal sanitaire ruimtes, het vloertype en hoe vaak we komen. Die prijs krijgt u vooraf in de offerte.',
+  },
+  {
+    vraag: 'Kan de prijs achteraf nog veranderen?',
+    antwoord: 'Nee, niet zonder overleg. De prijs in de offerte is de prijs die u betaalt. Blijkt de situatie wezenlijk anders dan afgesproken, dan bespreken we dat eerst met u.',
+  },
+  {
+    vraag: 'Zijn de prijzen inclusief btw?',
+    antwoord: 'Ja, alle prijzen op deze site zijn inclusief 21% btw. Zakelijke klanten krijgen een factuur waarop de btw apart staat.',
+  },
+];
+---
+<BaseLayout
+  title="Prijzen glazenwasser en schoonmaak Twente | F&D"
+  description="Wat kost een glazenwasser of schoonmaak? Vanaf-prijzen voor glasbewassing, praktijk, kantoor, VvE en eindschoonmaak, plus rekenhulp. Vaste prijs vooraf."
+  crumbs={[{ name: 'Prijzen', path: '/prijzen/' }]}
+  schemas={[faqSchema(faq)]}
+>
+  <PageHero
+    title="Wat kost schoonmaak bij F&D?"
+    intro={['Wij laten vooraf zien wat schoonmaak ongeveer kost. Daarna krijgt u een vaste prijs, zodat u nooit voor verrassingen staat.']}
+  />
+
+  <PriceTeaser title="Pakketten en vanaf-prijzen" intro="De prijzen hieronder zijn startprijzen. Uw vaste prijs hangt af van uw situatie." />
+
+  <section class="section" aria-labelledby="factoren">
+    <div class="container-page grid gap-10 lg:grid-cols-2">
+      <div>
+        <h2 id="factoren">Wat bepaalt de prijs?</h2>
+        <dl class="mt-8 space-y-6">
+          {prijsfactoren.map((f) => (
+            <div>
+              <dt class="font-display text-lg font-bold text-primary">{f.titel}</dt>
+              <dd class="mt-1 text-muted">{f.tekst}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div class="grid content-start gap-6">
+        <div class="card">
+          <h2 class="text-[2rem]">Uurtarieven schoonmaak</h2>
+          <ul class="mt-4 divide-y divide-line border-y border-line">
+            <li class="flex items-baseline gap-3 py-3"><span class="font-semibold text-primary">Schoonmaak</span><span class="mb-1 flex-1 border-b-2 border-dotted border-brand-cyan" aria-hidden="true" /><strong class="font-display text-xl text-primary">{eur2(uurtarieven.regulier)}</strong><span class="text-sm text-muted">per uur</span></li>
+            <li class="flex items-baseline gap-3 py-3"><span class="font-semibold text-primary">Diepte- of eindschoonmaak</span><span class="mb-1 flex-1 border-b-2 border-dotted border-brand-cyan" aria-hidden="true" /><strong class="font-display text-xl text-primary">{eur2(uurtarieven.diep)}</strong><span class="text-sm text-muted">per uur</span></li>
+          </ul>
+          <p class="mt-3 text-sm text-muted">Inclusief btw, minimaal {uurtarieven.minUren} uur per beurt.</p>
+          <div class="mt-5"><a href="/offerte/?dienst=schoonmaak" class="font-semibold text-secondary underline">Bereken je prijs voor schoonmaak</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-surface" aria-labelledby="glas-prijzen">
+    <div class="container-page grid gap-10 lg:grid-cols-2" data-reveal>
+      <div>
+        <h2 id="glas-prijzen" class="wave">Glazenwasser: prijs per raam</h2>
+        <p class="lead mt-4">Je betaalt per raam, met een staffel: hoe meer ramen, hoe lager de prijs per raam. Minimaal {eur2(glasPrijzen.minimum)} per beurt, inclusief btw.</p>
+        <h3 class="mt-8">Staffel</h3>
+        <ul class="mt-3 divide-y divide-line-strong border-y border-line-strong">
+          {staffel.map((st) => (
+            <li class="flex items-baseline gap-3 py-3">
+              <span class="font-semibold text-primary">{st.label}</span>
+              <span class="mb-1 flex-1 border-b-2 border-dotted border-brand-cyan" aria-hidden="true" />
+              <strong class="font-display text-xl text-primary">{eur2(st.prijs)}</strong>
+              <span class="text-sm text-muted">per raam</span>
+            </li>
+          ))}
+        </ul>
+        <h3 class="mt-8">Toeslagen per beurt</h3>
+        <ul class="mt-3 grid gap-x-6 gap-y-1 text-[0.95rem] sm:grid-cols-2">
+          {toeslagen.map((t) => <li class="flex justify-between gap-3 border-b border-line py-2"><span>{t.label}</span><strong class="text-primary">+{eur2(t.toeslag)}</strong></li>)}
+          {glasPrijzen.methodes.filter((m) => m.factor !== 1).map((m) => <li class="flex justify-between gap-3 border-b border-line py-2"><span>{m.label}</span><strong class="text-primary">×{String(m.factor).replace('.', ',')}</strong></li>)}
+        </ul>
+        <h3 class="mt-8">Extra’s</h3>
+        <ul class="mt-3 grid gap-x-6 gap-y-1 text-[0.95rem] sm:grid-cols-2">
+          {extraDiensten.filter((e) => e.aan).map((e) => <li class="flex justify-between gap-3 border-b border-line py-2"><span>{e.label}</span><strong class="text-primary">{eur2(e.prijs)} {e.eenheid}</strong></li>)}
+        </ul>
+        <p class="mt-4 text-muted">Bedrijfspand? Kies in de rekenhulp voor “Bedrijf”, of bekijk <a href="/diensten/glasbewassing-zakelijk/" class="font-semibold text-secondary">glasbewassing zakelijk</a>.</p>
+      </div>
+      <div class="self-start lg:sticky lg:top-28"><OfferteCta dienst="glas" /></div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Veelgestelde vragen">
+    <div class="container-page max-w-3xl">
+      <FaqList faqs={faq} title="Vragen over prijzen" />
+    </div>
+  </section>
+
+  <CtaBlock title="Uw vaste prijs binnen handbereik" />
+</BaseLayout>

@@ -1,0 +1,27 @@
+---
+// Button into the /offerte/ calculator, preselected. Prices themselves live on /prijzen/ and /offerte/.
+import Button from './Button.astro';
+
+interface Props {
+  dienst?: 'glas' | 'schoonmaak' | 'diep';
+  voor?: 'woning' | 'zakelijk';
+}
+const { dienst = 'glas', voor = 'woning' } = Astro.props;
+const href = `/offerte/?dienst=${dienst}${voor === 'zakelijk' ? '&voor=zakelijk' : ''}`;
+const u = voor === 'zakelijk';
+---
+<div class="flex flex-col gap-6 rounded-card bg-primary p-6 text-white sm:flex-row sm:items-center sm:p-8" id="prijs-berekenen">
+  <div class="flex-1">
+    <h2 class="text-[2rem] text-white">Wat kost het?</h2>
+    <p class="mt-2 text-white/85">
+      {dienst === 'glas'
+        ? u
+          ? 'Vul het aantal ramen in en zie direct uw prijs.'
+          : 'Kies je type woning en zie direct je prijs.'
+        : u
+          ? 'Kies het aantal uur en zie direct uw prijs.'
+          : 'Kies het aantal uur en zie direct je prijs.'}
+    </p>
+  </div>
+  <Button href={href} variant="accent" size="lg" data-cta={`offerte-${dienst}`}>Bereken je prijs</Button>
+</div>

@@ -1,0 +1,103 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import TrustPoints from '../../components/TrustPoints.astro';
+import ServiceCards from '../../components/ServiceCards.astro';
+import FaqList from '../../components/FaqList.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import Button from '../../components/Button.astro';
+import { plaatsen, type Plaats } from '../../data/plaatsen';
+import { actieveDiensten, isGlas } from '../../data/diensten';
+import Icon from '../../components/Icon.astro';
+import { faqSchema } from '../../lib/schema';
+import { withPlaceholders } from '../../lib/text';
+import { whatsappUrl } from '../../config/site';
+
+export const getStaticPaths = (() => plaatsen.map((p) => ({ params: { plaats: p.slug }, props: { plaats: p } }))) satisfies GetStaticPaths;
+
+const { plaats } = Astro.props as { plaats: Plaats };
+const path = `/werkgebied/${plaats.slug}/`;
+const focus = plaats.focus.map((s) => actieveDiensten.find((d) => d.slug === s)).filter((d) => d !== undefined);
+const rest = actieveDiensten.filter((d) => !plaats.focus.includes(d.slug) && !isGlas(d));
+const waText = `Hallo F&D Schoonmaak, ik zoek schoonmaak in ${plaats.naam}: `;
+const andere = plaatsen.filter((p) => p.slug !== plaats.slug);
+---
+<BaseLayout
+  title={plaats.title}
+  description={plaats.description}
+  crumbs={[{ name: 'Werkgebied', path: '/werkgebied/' }, { name: plaats.naam, path }]}
+  schemas={[faqSchema(plaats.faq)]}
+>
+  <PageHero title={`Schoonmaakbedrijf ${plaats.naam}`} intro={plaats.intro} waText={waText}>
+    <div class="mt-8"><TrustPoints /></div>
+  </PageHero>
+
+  <section class="section" aria-labelledby="diensten-plaats">
+    <div class="container-page">
+      <h2 id="diensten-plaats">Wat we doen in {plaats.naam}</h2>
+      <div class="mt-8"><ServiceCards items={focus} linkSuffix={` in ${plaats.naam}`} /></div>
+      {rest.length > 0 && (
+        <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+          {rest.map((d) => <li><a href={`/diensten/${d.slug}/`} class="font-semibold text-secondary">{d.zoekwoordPlaats} {plaats.naam}</a></li>)}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <section class="section bg-primary text-white" aria-labelledby="glas-plaats">
+    <div class="container-page grid gap-8 lg:grid-cols-[auto_1fr_auto] lg:items-center" data-reveal>
+      <span class="grid h-16 w-16 place-items-center rounded-full bg-white/10 text-brand-cyan-light"><Icon name="glas" class="h-8 w-8" /></span>
+      <div>
+        <h2 id="glas-plaats" class="text-white">Glasbewassing in {plaats.naam}</h2>
+        <p class="mt-3 max-w-[60ch] text-lg text-white/85">{plaats.glas.intro[0]} Los of met een abonnement elke 4, 6 of 8 weken.</p>
+      </div>
+      <Button href={`/werkgebied/${plaats.slug}/glazenwasser/`} variant="accent" size="lg" data-cta="plaats-glas">Glazenwasser {plaats.naam}</Button>
+    </div>
+  </section>
+
+  <section class="section bg-surface" aria-labelledby="omgeving">
+    <div class="container-page grid gap-10 lg:grid-cols-2">
+      <div>
+        <h2 id="omgeving">Waar in {plaats.naam}?</h2>
+        <p class="mt-3 text-muted">We komen in heel {plaats.naam}, onder andere in:</p>
+        <ul class="mt-5 flex flex-wrap gap-2">
+          {plaats.wijken.map((w) => <li class="rounded-full border border-line bg-paper px-3 py-1.5 text-[0.95rem]" set:html={withPlaceholders(w)} />)}
+        </ul>
+        {plaats.bedrijventerreinen.length > 0 && (
+          <>
+            <h3 class="mt-8">Bedrijventerreinen</h3>
+            <ul class="mt-4 flex flex-wrap gap-2">
+              {plaats.bedrijventerreinen.map((b) => <li class="rounded-full border border-line bg-paper px-3 py-1.5 text-[0.95rem]" set:html={withPlaceholders(b)} />)}
+            </ul>
+          </>
+        )}
+      </div>
+      <div class="card">
+        <h2 class="text-2xl">Schoonmaak in {plaats.naam} regelen</h2>
+        <p class="mt-3 text-muted">Stuur een appje met een foto, of bereken je prijs direct online. Je krijgt antwoord binnen 1 minuut.</p>
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+          <Button href={whatsappUrl(waText)} variant="whatsapp" icon="whatsapp" external data-cta="plaats-whatsapp">App ons</Button>
+          <Button href="/offerte/" variant="accent" data-cta="plaats-offerte">Offerte aanvragen</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Veelgestelde vragen">
+    <div class="container-page max-w-3xl">
+      <FaqList faqs={plaats.faq} title={`Vragen over schoonmaak in ${plaats.naam}`} />
+    </div>
+  </section>
+
+  <section class="pb-4" aria-labelledby="andere-plaatsen">
+    <div class="container-page">
+      <h2 id="andere-plaatsen" class="text-xl sm:text-2xl">Ook actief in</h2>
+      <ul class="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+        {andere.map((p) => <li><a href={`/werkgebied/${p.slug}/`} class="font-semibold text-secondary">Schoonmaakbedrijf {p.naam}</a></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBlock title={`Schoonmaak in ${plaats.naam} regelen?`} waText={waText} />
+</BaseLayout>

@@ -1,0 +1,195 @@
+@import 'tailwindcss';
+/* One family, two widths: condensed for headlines, normal for text. Self-hosted (no Google request). */
+@import '@fontsource-variable/bricolage-grotesque/standard.css';
+@import './motion.css';
+
+/*
+ * Design tokens. Change colours, fonts, radii and shadows here only.
+ * Palette from the logo: navy for text and surfaces, cyan for the quote CTA and highlights,
+ * chat green reserved for WhatsApp. Contrast (WCAG AA) checked.
+ */
+@theme {
+  /* Primitive palette */
+  /* Sampled from the logo: navy #043168, cyan #13a4c7 → #1ec0dd */
+  --color-navy-950: #021f45;
+  --color-navy-900: #043168;
+  --color-navy-800: #0a4488;
+  --color-cyan-400: #1ec0dd;
+  --color-cyan-500: #13a4c7;
+  --color-teal-700: #086a8c; /* darkened logo cyan, AA for text on white */
+  --color-teal-100: #cdeef7;
+  --color-teal-50: #eaf7fb;
+  --color-slate-950: #0f172a;
+  --color-slate-600: #475569;
+  --color-slate-300: #cbd5e1;
+  --color-slate-200: #e2e8f0;
+  --color-cool-100: #eef3f6;
+  --color-green-700: #0e7a40;
+  --color-green-800: #0a5f31;
+
+  /* Semantic tokens (use these in components) */
+  --color-primary: var(--color-navy-900);
+  --color-primary-strong: var(--color-navy-950);
+  --color-primary-soft: var(--color-navy-800);
+  --color-secondary: var(--color-teal-700);
+  --color-secondary-soft: var(--color-teal-50);
+  --color-secondary-line: var(--color-teal-100);
+  --color-brand-cyan: var(--color-cyan-500);
+  --color-brand-cyan-light: var(--color-cyan-400);
+  --color-accent: var(--color-cyan-400); /* logo cyan, quote CTA */
+  --color-accent-hover: var(--color-cyan-500);
+  --color-accent-ink: var(--color-navy-950); /* navy on cyan: AA contrast */
+  --color-whatsapp: var(--color-green-700);
+  --color-whatsapp-hover: var(--color-green-800);
+  --color-ink: var(--color-slate-950);
+  --color-muted: var(--color-slate-600);
+  --color-line: var(--color-slate-200);
+  --color-line-strong: var(--color-slate-300);
+  --color-surface: var(--color-cool-100);
+  --color-surface-alt: var(--color-slate-200);
+  --color-paper: #ffffff;
+  --color-danger: #b42318;
+  --color-placeholder: #fff4d6;
+  --color-placeholder-ink: #7a4a00;
+
+  /* Chat (hero) */
+  --color-bubble-in: #ffffff;
+  --color-bubble-out: #dff3e8;
+  --color-online: #3ddc84;
+
+  --font-sans: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius hierarchy: controls are soft, containers are softer, page sections are square. */
+  --radius-button: 0.625rem;
+  --radius-card: 0.875rem;
+  --radius-bubble: 1.125rem;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-lift: 0 18px 40px -12px rgb(2 31 69 / 0.45);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+  }
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    font-optical-sizing: auto;
+  }
+  /* Headlines: condensed width, heavy, tight. The type is the visual. */
+  h1,
+  h2,
+  h3 {
+    @apply font-display text-primary;
+    font-stretch: 75%;
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(2.6rem, 9vw, 4.75rem);
+    font-weight: 800;
+  }
+  h2 {
+    font-size: clamp(2rem, 5.5vw, 3rem);
+    font-weight: 750;
+  }
+  h3 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    @apply underline-offset-4;
+  }
+  /* Links inside running text must not rely on colour alone */
+  p a,
+  li > p a {
+    @apply underline;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+  .section {
+    @apply py-16 sm:py-24;
+  }
+  /* Short context line above a page title (sentence case, only where it carries information) */
+  .kicker {
+    @apply mb-3 block text-base font-semibold text-secondary;
+  }
+  .lead {
+    @apply max-w-[62ch] text-lg text-muted sm:text-xl;
+  }
+  .card {
+    @apply rounded-card border border-line bg-paper p-6;
+  }
+  .prose-fd {
+    @apply max-w-[68ch] text-ink;
+  }
+  .prose-fd h2 {
+    @apply mt-12 mb-4;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+  }
+  .prose-fd h3 {
+    @apply mt-8 mb-3;
+  }
+  .prose-fd p,
+  .prose-fd ul,
+  .prose-fd ol {
+    @apply mb-5;
+  }
+  .prose-fd ul {
+    @apply list-disc space-y-2 pl-6;
+  }
+  .prose-fd ol {
+    @apply list-decimal space-y-2 pl-6;
+  }
+  .prose-fd a {
+    @apply font-semibold text-secondary underline;
+  }
+  .prose-fd blockquote {
+    @apply my-6 border-l-4 border-secondary pl-4 text-muted;
+  }
+  .prose-fd table {
+    @apply mb-6 w-full border-collapse text-left text-base;
+  }
+  .prose-fd th,
+  .prose-fd td {
+    @apply border border-line px-3 py-2;
+  }
+  .prose-fd th {
+    @apply bg-surface;
+  }
+  /* Visible placeholder for missing data */
+  .ph {
+    @apply rounded bg-placeholder px-1 font-semibold text-placeholder-ink;
+  }
+}

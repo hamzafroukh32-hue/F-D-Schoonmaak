@@ -1,0 +1,34 @@
+---
+import { whatsappUrl } from '../config/site';
+import Button from './Button.astro';
+import Bubbles from './Bubbles.astro';
+import { withPlaceholders } from '../lib/text';
+
+interface Props {
+  kicker?: string; // short sentence-case context line, only when it carries information
+  title: string;
+  intro?: string[];
+  showCtas?: boolean;
+  waText?: string;
+}
+const { kicker, title, intro = [], showCtas = true, waText } = Astro.props;
+---
+<section class="relative overflow-hidden border-b border-line bg-surface">
+  <Bubbles tone="light" sparkles={false} />
+  <div class="container-page relative py-12 sm:py-16">
+    <div class="max-w-3xl">
+      {kicker && <p class="kicker">{kicker}</p>}
+      <h1><span class="wipe inline-block">{title}</span></h1>
+      {intro.map((p, i) => <p class:list={['mt-5', i === 0 ? 'lead text-ink' : 'max-w-[62ch] text-muted']} set:html={withPlaceholders(p)} />)}
+      {
+        showCtas && (
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button href={whatsappUrl(waText)} variant="whatsapp" size="lg" icon="whatsapp" external data-cta="hero-whatsapp">App ons</Button>
+            <Button href="/offerte/" variant="accent" size="lg" data-cta="hero-offerte">Offerte aanvragen</Button>
+          </div>
+        )
+      }
+      <slot />
+    </div>
+  </div>
+</section>

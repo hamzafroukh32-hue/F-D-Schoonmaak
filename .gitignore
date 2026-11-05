@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+
+.env
+.env.*
+lighthouse/
+*.log
+.DS_Store
+!.env.example
+.vercel/
+.claude/

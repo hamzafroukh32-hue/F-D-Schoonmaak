@@ -1,0 +1,33 @@
+---
+// Services as a list of rows (not identical cards): icon, name, one line, a link that says where it goes.
+import type { Dienst } from '../data/diensten';
+import Icon from './Icon.astro';
+
+interface Props {
+  items: Dienst[];
+  linkSuffix?: string; // e.g. ' in Hengelo' for place pages
+  headingLevel?: 'h2' | 'h3';
+}
+const { items, linkSuffix = '', headingLevel = 'h3' } = Astro.props;
+const H = headingLevel;
+---
+<ul class="grid border-t border-line md:grid-cols-2 md:gap-x-12" data-stagger>
+  {
+    items.map((d) => (
+      <li class="border-b border-line">
+        <a href={`/diensten/${d.slug}/`} class="row-link group flex gap-4 py-6 no-underline">
+          <span class="row-icon grid h-12 w-12 shrink-0 place-items-center rounded-full bg-secondary-soft text-secondary">
+            <Icon name={d.icon} class="h-6 w-6" />
+          </span>
+          <span>
+            <H>
+              {d.kort}
+              {linkSuffix}
+            </H>
+            <span class="mt-1 block text-muted">{d.kaartTekst}</span>
+          </span>
+        </a>
+      </li>
+    ))
+  }
+</ul>

@@ -1,0 +1,21 @@
+---
+import BaseLayout from './BaseLayout.astro';
+interface Props {
+  title: string;
+  description: string;
+  h1: string;
+  path: string;
+  crumb: string;
+}
+const { title, description, h1, path, crumb } = Astro.props;
+---
+<BaseLayout title={title} description={description} crumbs={[{ name: crumb, path }]}>
+  <section class="section">
+    <div class="container-page max-w-3xl">
+      <h1>{h1}</h1>
+      <div class="prose-fd mt-8">
+        <slot />
+      </div>
+    </div>
+  </section>
+</BaseLayout>

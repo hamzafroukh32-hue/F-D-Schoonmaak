@@ -1,0 +1,104 @@
+---
+import LegalLayout from '../layouts/LegalLayout.astro';
+import { site } from '../config/site';
+
+const analyticsText =
+  site.analytics.provider === null
+    ? 'Wij gebruiken op deze website geen analysediensten en geen tracking-cookies.'
+    : `Wij gebruiken ${site.analytics.provider === 'plausible' ? 'Plausible Analytics' : 'Umami'} om anoniem te meten hoe de website wordt gebruikt. Deze dienst plaatst geen cookies en verzamelt geen gegevens waarmee u persoonlijk herkenbaar bent.`;
+---
+<LegalLayout
+  title="Privacyverklaring | F&D Schoonmaak"
+  description="Lees hoe F&D Schoonmaak omgaat met uw persoonsgegevens: welke gegevens we verwerken, waarom, hoe lang en wat uw rechten zijn."
+  h1="Privacyverklaring"
+  path="/privacyverklaring/"
+  crumb="Privacyverklaring"
+>
+  <p>Laatst bijgewerkt: 2 november 2026</p>
+
+  <h2>Wie zijn wij?</h2>
+  <p>
+    {site.name} is verantwoordelijk voor de verwerking van persoonsgegevens zoals beschreven in deze privacyverklaring.
+  </p>
+  <ul>
+    <li>Adres: {site.address.street}, {site.address.postalCode ? `${site.address.postalCode} ` : ''}{site.address.city}</li>
+    <li>KvK-nummer: {site.legal.kvk}</li>
+    <li>Telefoon: {site.contact.phoneDisplay}</li>
+    <li>E-mail: {site.contact.email}</li>
+    <li>Vragen over privacy: mail naar {site.contact.email}</li>
+  </ul>
+
+  <h2>Welke gegevens verwerken wij?</h2>
+  <p>Wij verwerken alleen de gegevens die u zelf aan ons geeft, bijvoorbeeld via het offerteformulier, WhatsApp, telefoon of e-mail:</p>
+  <ul>
+    <li>naam;</li>
+    <li>plaats en, als u klant wordt, het adres waar wij schoonmaken;</li>
+    <li>telefoonnummer en/of e-mailadres;</li>
+    <li>de inhoud van uw bericht en eventuele foto's die u meestuurt;</li>
+    <li>hoe u ons gevonden heeft (als u dat invult);</li>
+    <li>als u klant wordt: de gegevens die nodig zijn voor de factuur, zoals naam, adres en e-mailadres.</li>
+  </ul>
+  <p>
+    Bij het offerteformulier slaan wij ook op via welke pagina u op onze website kwam en, als die in de link staan, campagnegegevens (zogenaamde
+    UTM-parameters). Hiermee zien we welke advertenties of berichten werken. Deze gegevens worden alleen tijdens uw bezoek in uw browser bewaard
+    (sessionStorage) en alleen naar ons verstuurd als u het formulier verzendt.
+  </p>
+
+  <h2>Waarom verwerken wij deze gegevens?</h2>
+  <ul>
+    <li>Om uw vraag of offerteaanvraag te beantwoorden (grondslag: uw verzoek, voorafgaand aan een overeenkomst).</li>
+    <li>Om de schoonmaakwerkzaamheden uit te voeren en te factureren (grondslag: uitvoering van de overeenkomst).</li>
+    <li>Om te voldoen aan wettelijke verplichtingen, zoals de fiscale bewaarplicht (grondslag: wettelijke verplichting).</li>
+  </ul>
+
+  <h2>Hoe lang bewaren wij uw gegevens?</h2>
+  <ul>
+    <li>Offerteaanvragen die niet tot een opdracht leiden: 12 maanden.</li>
+    <li>Klantgegevens: zolang u klant bent, en daarna nog 2 jaar.</li>
+    <li>Facturen en administratie: 7 jaar, vanwege de wettelijke fiscale bewaarplicht.</li>
+  </ul>
+
+  <h2>Met wie delen wij uw gegevens?</h2>
+  <p>Wij verkopen uw gegevens nooit. Wij delen gegevens alleen met partijen die ons helpen onze dienst te leveren:</p>
+  <ul>
+    <li>Vercel (hosting van de website);</li>
+    <li>Web3Forms (doorsturen van ingevulde formulieren naar onze e-mail);</li>
+    <li>WhatsApp/Meta, als u ons via WhatsApp benadert;</li>
+    <li>onze boekhouder en boekhoudsoftware;</li>
+    <li>onze e-mail- en telefoonprovider.</li>
+  </ul>
+  <p>
+    Sommige van deze partijen kunnen gegevens buiten de Europese Economische Ruimte verwerken. Wij kiezen in dat geval voor partijen die passende
+    waarborgen bieden.
+  </p>
+
+  <h2>Cookies en analyse</h2>
+  <p>{analyticsText}</p>
+  <p>
+    Deze website gebruikt geen advertentie- of trackingcookies. Daarom ziet u ook geen cookiebanner. Wel gebruikt de website de opslag van uw browser
+    (sessionStorage) om bij te houden via welke pagina u binnenkwam. Die gegevens verdwijnen als u het tabblad sluit.
+  </p>
+
+  <h2>Foto's op de website</h2>
+  <p>
+    Voor- en na-foto's van onze werkzaamheden plaatsen wij alleen met toestemming van de klant en zonder herkenbare personen of persoonsgegevens.
+  </p>
+
+  <h2>Uw rechten</h2>
+  <p>
+    U heeft het recht om uw gegevens in te zien, te laten corrigeren of te laten verwijderen. Ook kunt u bezwaar maken tegen de verwerking, de
+    verwerking laten beperken of uw gegevens laten overdragen. Stuur uw verzoek naar {site.contact.email}. Wij reageren binnen vier weken.
+  </p>
+  <p>
+    Bent u het niet eens met hoe wij met uw gegevens omgaan? Dan kunt u een klacht indienen bij de Autoriteit Persoonsgegevens
+    (autoriteitpersoonsgegevens.nl).
+  </p>
+
+  <h2>Beveiliging</h2>
+  <p>
+    Wij nemen passende maatregelen om uw gegevens te beschermen. De website gebruikt een beveiligde verbinding (https). Onze accounts zijn beveiligd met sterke wachtwoorden en, waar mogelijk, tweestapsverificatie.
+  </p>
+
+  <h2>Wijzigingen</h2>
+  <p>Wij kunnen deze privacyverklaring aanpassen. De nieuwste versie staat altijd op deze pagina.{site.legal.btw && ` Btw-nummer: ${site.legal.btw}.`}</p>
+</LegalLayout>

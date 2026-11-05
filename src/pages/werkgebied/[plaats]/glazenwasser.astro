@@ -1,0 +1,98 @@
+---
+// "Glazenwasser [plaats]": window cleaning per place, with its own text per place from src/data/plaatsen.ts.
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
+import TrustPoints from '../../../components/TrustPoints.astro';
+import OfferteCta from '../../../components/OfferteCta.astro';
+import FaqList from '../../../components/FaqList.astro';
+import CtaBlock from '../../../components/CtaBlock.astro';
+import Icon from '../../../components/Icon.astro';
+import { plaatsen, type Plaats } from '../../../data/plaatsen';
+import { getDienst } from '../../../data/diensten';
+import { faqSchema, serviceSchema } from '../../../lib/schema';
+import { glasFeiten, glasExtras, glasZijden } from '../../../lib/glas';
+import { withPlaceholders } from '../../../lib/text';
+
+export const getStaticPaths = (() => plaatsen.map((p) => ({ params: { plaats: p.slug }, props: { plaats: p } }))) satisfies GetStaticPaths;
+
+const { plaats } = Astro.props as { plaats: Plaats };
+const path = `/werkgebied/${plaats.slug}/glazenwasser/`;
+const particulier = getDienst('glasbewassing-particulier')!;
+const zakelijk = getDienst('glasbewassing-zakelijk')!;
+const waText = `Hallo F&D Schoonmaak, ik zoek een glazenwasser in ${plaats.naam}: `;
+const faq = [plaats.glas.faq, ...particulier.faq.filter((f) => /kost|vaak|regent/.test(f.vraag))];
+const andere = plaatsen.filter((p) => p.slug !== plaats.slug);
+---
+<BaseLayout
+  title={`Glazenwasser ${plaats.naam} | F&D Schoonmaak`}
+  description={plaats.glas.description}
+  crumbs={[
+    { name: 'Werkgebied', path: '/werkgebied/' },
+    { name: plaats.naam, path: `/werkgebied/${plaats.slug}/` },
+    { name: 'Glazenwasser', path },
+  ]}
+  schemas={[serviceSchema(`Glasbewassing in ${plaats.naam}`, plaats.glas.description, path, [plaats.naam]), faqSchema(faq)]}
+>
+  <PageHero kicker="Glasbewassing" title={`Glazenwasser ${plaats.naam}`} intro={plaats.glas.intro} waText={waText}>
+    <div class="mt-8"><TrustPoints /></div>
+  </PageHero>
+
+  <section class="section" aria-labelledby="wat">
+    <div class="container-page grid gap-10 lg:grid-cols-2" data-reveal>
+      <div>
+        <h2 id="wat" class="wave">Ramen wassen in {plaats.naam}</h2>
+        <ul class="mt-6 space-y-3">
+          {[`Ramen wassen. ${glasZijden}`, 'Woningen, appartementen en bedrijfspanden', 'Streeploos met osmosewater, ook op hogere verdiepingen', ...glasExtras].map((item) => (
+            <li class="flex gap-3"><Icon name="check" class="mt-1 h-5 w-5 shrink-0 text-secondary" /><span set:html={withPlaceholders(item)} /></li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <dl class="grid gap-x-6 gap-y-3 rounded-card bg-surface p-5 sm:grid-cols-[8rem_1fr]">
+          {glasFeiten.map((f) => (
+            <>
+              <dt class="font-semibold text-primary">{f.label}</dt>
+              <dd set:html={withPlaceholders(f.value)} />
+            </>
+          ))}
+        </dl>
+        <ul class="mt-6 border-t border-line">
+          {[particulier, zakelijk].map((d) => (
+            <li class="border-b border-line">
+              <a href={`/diensten/${d.slug}/`} class="row-link flex items-center gap-3 py-4 font-semibold text-primary no-underline">
+                <span class="row-icon grid h-10 w-10 place-items-center rounded-full bg-secondary-soft text-secondary"><Icon name="glas" /></span>
+                {d.h1}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" aria-label="Rekenhulp">
+    <div class="container-page max-w-3xl"><OfferteCta dienst="glas" /></div>
+  </section>
+
+  <section class="section bg-surface" aria-label="Veelgestelde vragen">
+    <div class="container-page max-w-3xl">
+      <FaqList faqs={faq} title={`Vragen over de glazenwasser in ${plaats.naam}`} />
+      <p class="mt-8">
+        <a href={`/werkgebied/${plaats.slug}/`} class="font-semibold text-secondary underline">Alle schoonmaakdiensten in {plaats.naam}</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="py-10" aria-labelledby="andere-plaatsen">
+    <div class="container-page">
+      <h2 id="andere-plaatsen" class="text-xl sm:text-2xl">Glazenwasser in de buurt</h2>
+      <ul class="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+        {andere.map((p) => <li><a href={`/werkgebied/${p.slug}/glazenwasser/`} class="font-semibold text-secondary">Glazenwasser {p.naam}</a></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBlock title={`Glazenwasser in ${plaats.naam} nodig?`} aanspreek="je" waText={waText} />
+</BaseLayout>

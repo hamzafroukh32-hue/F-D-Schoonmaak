@@ -1,0 +1,813 @@
+---
+/**
+ * Offerte-calculator in three steps (Wat → Waar → Gegevens).
+ * Prices come from src/data/prijzen.ts; the maths lives in src/lib/offerte.ts.
+ * The form is sent via Web3Forms (see src/lib/forms.ts); the selection and price arrive by e-mail as a text summary.
+ */
+import Icon from './Icon.astro';
+import { glasPrijzen, uurtarieven, extraDiensten, schoonmaakFrequenties, formatEuro, btwPercentage } from '../data/prijzen';
+import { plaatsen } from '../data/plaatsen';
+import { site, absoluteUrl } from '../config/site';
+import { formEndpoint, formAccessKey } from '../lib/forms';
+
+const extras = extraDiensten.filter((e) => e.aan);
+const bronnen = ['Google', 'Google Maps', 'Instagram', 'TikTok', 'Facebook', 'Via iemand die ik ken', 'Anders', 'Zeg ik liever niet'];
+const utmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+const schoonmaakTypes = {
+  woning: ['Airbnb- of vakantiewoning', 'Woning, regelmatig', 'Anders'],
+  zakelijk: ['Kantoor', 'Praktijk', 'VvE / trappenhuis', 'Winkel', 'Anders'],
+};
+const diepTypes = ['Diepteschoonmaak', 'Eindschoonmaak (verhuizing / oplevering)'];
+const field =
+  'mt-1 block w-full min-h-12 rounded-button border border-line-strong bg-paper px-4 py-3 text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30';
+const label = 'block font-semibold text-primary';
+const eur2 = (n: number) => formatEuro(n, 2);
+const staffelTekst = glasPrijzen.staffel
+  .map((s, i, a) => {
+    const van = i === 0 ? 1 : (a[i - 1].tot ?? 0) + 1;
+    return s.tot === null ? `vanaf raam ${van}: ${eur2(s.prijs)}` : `raam ${van} t/m ${s.tot}: ${eur2(s.prijs)}`;
+  })
+  .join(', ');
+---
+<noscript>
+  <p class="card mb-6">
+    Voor de rekenhulp is JavaScript nodig. Je kunt ook het <a href="/contact/" class="font-semibold text-secondary underline">offerteformulier</a> gebruiken of ons appen.
+  </p>
+</noscript>
+
+<form
+  name="offerte-berekening"
+  method="POST"
+  action={formEndpoint}
+  id="calc"
+  class="calc"
+  novalidate
+>
+  <input type="hidden" name="access_key" value={formAccessKey} />
+  <input type="hidden" name="subject" value="Nieuwe offerte-berekening via de website" />
+  <input type="hidden" name="from_name" value="Website F&amp;D Schoonmaak" />
+  <input type="hidden" name="redirect" value={absoluteUrl('/bedankt/')} />
+  <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  <input type="hidden" name="samenvatting" data-out="samenvatting" />
+  <input type="hidden" name="totaal_incl_btw" data-out="totaal" />
+  <input type="hidden" name="voor_wie" data-out="voor" />
+  {utmFields.map((n) => <input type="hidden" name={n} data-track={n} />)}
+  <input type="hidden" name="landingspagina" data-track="landingspagina" />
+  <input type="hidden" name="verwijzer" data-track="verwijzer" />
+
+  <!-- Progress -->
+  <ol class="mb-8 grid grid-cols-3 gap-2" aria-label="Stappen">
+    {['Wat', 'Waar', 'Gegevens'].map((s, i) => (
+      <li class="step-dot" data-step-dot={i + 1} aria-current={i === 0 ? 'step' : undefined}>
+        <span class="step-num">{i + 1}</span> {s}
+      </li>
+    ))}
+  </ol>
+
+  <!-- STEP 1: WAT -->
+  <section data-step="1" aria-labelledby="stap1">
+    <h2 id="stap1" class="text-[2rem]">Wat moet er schoon?</h2>
+
+    <fieldset class="mt-6">
+      <legend class={label}>Voor wie?</legend>
+      <div class="mt-2 grid grid-cols-2 gap-3 sm:max-w-md">
+        <label class="chip chip-lg"><input type="radio" name="calc_voor" value="woning" checked /><Icon name="woning" class="h-5 w-5" /> Woning</label>
+        <label class="chip chip-lg"><input type="radio" name="calc_voor" value="zakelijk" /><Icon name="kantoor" class="h-5 w-5" /> Bedrijf</label>
+      </div>
+    </fieldset>
+
+    <div class="mt-8 space-y-4">
+      <!-- Glasbewassing -->
+      <div class="svc" data-svc="glas">
+        <label class="svc-head">
+          <input type="checkbox" data-svc-toggle checked />
+          <span class="svc-icon"><Icon name="glas" class="h-6 w-6" /></span>
+          <span class="flex-1">
+            <strong class="block font-display text-xl text-primary">Glasbewassing</strong>
+            <span class="text-sm text-muted">Prijs per raam, minimaal {eur2(glasPrijzen.minimum)}</span>
+          </span>
+          <strong class="svc-price font-display text-xl text-primary" data-line="glas">–</strong>
+        </label>
+        <div class="svc-body">
+          <fieldset data-only="woning">
+            <legend class={label}>Wat voor huis?</legend>
+            <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {glasPrijzen.woningtypes.map((t) => (
+                <label class="chip chip-col">
+                  <input type="radio" name="calc_woningtype" value={t.id} data-ramen={t.ramen} data-zijde={t.zijde} data-verdieping={t.verdieping} checked={t.id === 'rijtjeshuis'} />
+                  <span class="font-semibold">{t.label}</span>
+                  <span class="text-xs text-muted">ca. {t.ramen} ramen</span>
+                </label>
+              ))}
+            </div>
+            <p class="mt-2 text-sm text-muted">Het aantal ramen is een gemiddelde. Pas het hieronder aan naar je eigen woning.</p>
+          </fieldset>
+          <p data-only="zakelijk" hidden class="text-muted">Vul het aantal ramen van je pand in. Bij een groot pand of hoogwerker maken we een offerte op maat.</p>
+
+          <div class="mt-5 grid gap-5 sm:grid-cols-2">
+            <div>
+              <span class={label} id="ramen-label">Aantal ramen</span>
+              <div class="stepper mt-1" role="group" aria-labelledby="ramen-label">
+                <button type="button" data-step-btn="-1" aria-label="Eén raam minder">−</button>
+                <input type="number" inputmode="numeric" min="1" max="300" value="12" data-key="glas.ramen" aria-labelledby="ramen-label" />
+                <button type="button" data-step-btn="1" aria-label="Eén raam meer">+</button>
+              </div>
+              <p class="mt-2 text-xs text-muted">Staffel: {staffelTekst}.</p>
+            </div>
+            <fieldset>
+              <legend class={label}>Hoe vaak?</legend>
+              <div class="mt-1 grid grid-cols-2 gap-2">
+                {glasPrijzen.frequenties.map((f) => (
+                  <label class="chip">
+                    <input type="radio" name="calc_glas_freq" value={f.id} checked={f.id === 'eenmalig'} />
+                    <span>{f.label}</span>
+                    {f.korting ? <span class="badge">{String(f.korting).replace('.', ',')}% korting</span> : null}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="mt-5 grid gap-5 sm:grid-cols-2">
+            <fieldset>
+              <legend class={label}>Methode</legend>
+              <div class="mt-1 grid gap-2">
+                {glasPrijzen.methodes.map((m) => (
+                  <label class="chip"><input type="radio" name="calc_methode" value={m.id} checked={m.factor === 1} /><span>{m.label}</span>{m.factor !== 1 && <span class="badge">×{String(m.factor).replace('.', ',')}</span>}</label>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class={label}>Welke kant?</legend>
+              <div class="mt-1 grid gap-2">
+                {glasPrijzen.zijden.map((z) => (
+                  <label class="chip"><input type="radio" name="calc_zijde" value={z.id} checked={z.id === 'gehele'} /><span>{z.label}</span>{z.toeslag > 0 && <span class="badge">+{eur2(z.toeslag)}</span>}</label>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class={label}>Verdiepingen</legend>
+              <div class="mt-1 grid gap-2">
+                {glasPrijzen.verdiepingen.map((v) => (
+                  <label class="chip"><input type="radio" name="calc_verdieping" value={v.id} checked={v.id === '1e'} /><span>{v.label}</span>{v.toeslag > 0 && <span class="badge">+{eur2(v.toeslag)}</span>}</label>
+                ))}
+              </div>
+            </fieldset>
+            <div class="grid content-start gap-4">
+              {glasPrijzen.perStuk.map((p) => (
+                <div>
+                  <span class={label} id={`ps-${p.id}`}>{p.label} <span class="font-normal text-muted">({eur2(p.prijs)} per stuk)</span></span>
+                  <div class="stepper mt-1" role="group" aria-labelledby={`ps-${p.id}`}>
+                    <button type="button" data-step-btn="-1" aria-label={`${p.label}: één minder`}>−</button>
+                    <input type="number" inputmode="numeric" min="0" max="50" value="0" data-key={`glas.perStuk.${p.id}`} aria-labelledby={`ps-${p.id}`} />
+                    <button type="button" data-step-btn="1" aria-label={`${p.label}: één meer`}>+</button>
+                  </div>
+                </div>
+              ))}
+              <label class="chip"><input type="checkbox" data-key="glas.ladder" /><span>{glasPrijzen.ladder.label}</span><span class="badge">+{eur2(glasPrijzen.ladder.toeslag)}</span></label>
+            </div>
+            <fieldset data-only="woning" class="sm:col-span-2">
+              <legend class={label}>Serre</legend>
+              <div class="mt-1 grid gap-2 sm:grid-cols-3">
+                {glasPrijzen.serre.map((s) => (
+                  <label class="chip"><input type="radio" name="calc_serre" value={s.id} checked={s.id === 'geen'} /><span>{s.label}</span>{s.toeslag > 0 && <span class="badge">+{eur2(s.toeslag)}</span>}</label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schoonmaak (per uur) -->
+      <div class="svc" data-svc="schoonmaak">
+        <label class="svc-head">
+          <input type="checkbox" data-svc-toggle />
+          <span class="svc-icon"><Icon name="kantoor" class="h-6 w-6" /></span>
+          <span class="flex-1">
+            <strong class="block font-display text-xl text-primary">Schoonmaak</strong>
+            <span class="text-sm text-muted">{eur2(uurtarieven.regulier)} per uur</span>
+          </span>
+          <strong class="svc-price font-display text-xl text-primary" data-line="schoonmaak">–</strong>
+        </label>
+        <div class="svc-body grid gap-5 sm:grid-cols-3">
+          <div>
+            <label for="sm-type-woning" class={label} data-only="woning">Wat voor schoonmaak?</label>
+            <select id="sm-type-woning" class={field} data-key="schoonmaak.type" data-only="woning">
+              {schoonmaakTypes.woning.map((t) => <option>{t}</option>)}
+            </select>
+            <label for="sm-type-zakelijk" class={label} data-only="zakelijk" hidden>Wat voor pand?</label>
+            <select id="sm-type-zakelijk" class={field} data-key="schoonmaak.type" data-only="zakelijk" hidden disabled>
+              {schoonmaakTypes.zakelijk.map((t) => <option>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <span class={label} id="sm-uren">Hoeveel uur?</span>
+            <div class="stepper mt-1" role="group" aria-labelledby="sm-uren">
+              <button type="button" data-step-btn={-uurtarieven.stapUren} aria-label="Half uur minder">−</button>
+              <input type="number" inputmode="decimal" min={uurtarieven.minUren} max="40" step={uurtarieven.stapUren} value="3" data-key="schoonmaak.uren" aria-labelledby="sm-uren" />
+              <button type="button" data-step-btn={uurtarieven.stapUren} aria-label="Half uur meer">+</button>
+            </div>
+            <p class="mt-1 text-xs text-muted">Minimaal {uurtarieven.minUren} uur per beurt.</p>
+          </div>
+          <div>
+            <label for="sm-freq" class={label}>Hoe vaak?</label>
+            <select id="sm-freq" class={field} data-key="schoonmaak.freq">
+              {schoonmaakFrequenties.map((f) => <option value={f.id}>{f.label}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diepteschoonmaak (per uur) -->
+      <div class="svc" data-svc="diep">
+        <label class="svc-head">
+          <input type="checkbox" data-svc-toggle />
+          <span class="svc-icon"><Icon name="woning" class="h-6 w-6" /></span>
+          <span class="flex-1">
+            <strong class="block font-display text-xl text-primary">Diepteschoonmaak of eindschoonmaak</strong>
+            <span class="text-sm text-muted">{eur2(uurtarieven.diep)} per uur</span>
+          </span>
+          <strong class="svc-price font-display text-xl text-primary" data-line="diep">–</strong>
+        </label>
+        <div class="svc-body grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="dp-type" class={label}>Wat voor beurt?</label>
+            <select id="dp-type" class={field} data-key="diep.type">
+              {diepTypes.map((t) => <option>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <span class={label} id="dp-uren">Hoeveel uur?</span>
+            <div class="stepper mt-1" role="group" aria-labelledby="dp-uren">
+              <button type="button" data-step-btn={-uurtarieven.stapUren} aria-label="Half uur minder">−</button>
+              <input type="number" inputmode="decimal" min={uurtarieven.minUren} max="60" step={uurtarieven.stapUren} value="4" data-key="diep.uren" aria-labelledby="dp-uren" />
+              <button type="button" data-step-btn={uurtarieven.stapUren} aria-label="Half uur meer">+</button>
+            </div>
+            <p class="mt-1 text-xs text-muted">Twijfel je over het aantal uur? Stuur een foto, wij schatten het voor je in.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extra's -->
+      {extras.map((e) => (
+        <div class="svc" data-svc={e.id} data-extra>
+          <label class="svc-head">
+            <input type="checkbox" data-svc-toggle />
+            <span class="svc-icon"><Icon name="woning" class="h-6 w-6" /></span>
+            <span class="flex-1">
+              <strong class="block font-display text-xl text-primary">{e.label}</strong>
+              <span class="text-sm text-muted">{eur2(e.prijs)} {e.eenheid}, minimaal {eur2(e.minimum)}</span>
+            </span>
+            <strong class="svc-price font-display text-xl text-primary" data-line={e.id}>–</strong>
+          </label>
+          <div class="svc-body">
+            <span class={label} id={`ex-${e.id}`}>Aantal ({e.eenheid.replace('per ', '')})</span>
+            <div class="stepper mt-1" role="group" aria-labelledby={`ex-${e.id}`}>
+              <button type="button" data-step-btn="-1" aria-label="Eén minder">−</button>
+              <input type="number" inputmode="numeric" min="1" max="200" value={e.standaard} data-key={`extras.${e.id}`} aria-labelledby={`ex-${e.id}`} />
+              <button type="button" data-step-btn="1" aria-label="Eén meer">+</button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <p class="mt-6 text-sm text-muted">
+      Dit is een richtprijs, inclusief btw. Na je aanvraag checken we de situatie, bijvoorbeeld met een foto. Wijkt die echt af, dan overleggen we eerst.
+    </p>
+  </section>
+
+  <!-- STEP 2: WAAR -->
+  <section data-step="2" hidden aria-labelledby="stap2">
+    <h2 id="stap2" class="text-[2rem]">Waar moeten we zijn?</h2>
+    <div class="mt-6 grid gap-5 sm:grid-cols-2">
+      <div>
+        <label for="o-postcode" class={label}>Postcode</label>
+        <input id="o-postcode" name="postcode" class={field} autocomplete="postal-code" placeholder="7570 AB" required />
+      </div>
+      <div>
+        <label for="o-huisnummer" class={label}>Huisnummer</label>
+        <input id="o-huisnummer" name="huisnummer" class={field} autocomplete="address-line2" required />
+      </div>
+      <div>
+        <label for="o-straat" class={label}>Straat</label>
+        <input id="o-straat" name="straat" class={field} autocomplete="address-line1" />
+      </div>
+      <div>
+        <label for="o-plaats" class={label}>Plaats</label>
+        <input id="o-plaats" name="plaats" class={field} list="o-plaatsen" autocomplete="address-level2" required />
+        <datalist id="o-plaatsen">{plaatsen.map((p) => <option value={p.naam} />)}</datalist>
+      </div>
+    </div>
+    <p class="mt-4 text-sm text-muted">We werken in {plaatsen.map((p) => p.naam).join(', ')}. Woon je net daarbuiten? Vraag het gerust aan.</p>
+  </section>
+
+  <!-- STEP 3: GEGEVENS -->
+  <section data-step="3" hidden aria-labelledby="stap3">
+    <h2 id="stap3" class="text-[2rem]">Je gegevens</h2>
+    <div class="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">
+      <div class="grid content-start gap-5">
+        <div>
+          <label for="o-naam" class={label}>Naam</label>
+          <input id="o-naam" name="naam" class={field} autocomplete="name" required />
+        </div>
+        <fieldset class="rounded-card border border-line p-4" aria-describedby="o-contact-hint">
+          <legend class="px-1 font-semibold text-primary">Hoe kunnen we je bereiken?</legend>
+          <p id="o-contact-hint" class="text-sm text-muted">Telefoon óf e-mail is genoeg.</p>
+          <div class="mt-3 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="o-tel" class={label}>Telefoon</label>
+              <input id="o-tel" name="telefoon" type="tel" inputmode="tel" autocomplete="tel" class={field} />
+            </div>
+            <div>
+              <label for="o-email" class={label}>E-mail</label>
+              <input id="o-email" name="email" type="email" autocomplete="email" class={field} />
+            </div>
+          </div>
+          <p id="o-contact-error" class="mt-2 hidden text-sm font-semibold text-danger" role="alert">Vul een telefoonnummer of e-mailadres in.</p>
+        </fieldset>
+        <div>
+          <label for="o-datum" class={label}>Voorkeursdatum <span class="font-normal text-muted">(optioneel)</span></label>
+          <input id="o-datum" name="voorkeursdatum" type="date" class={field} />
+        </div>
+        <div>
+          <label for="o-bericht" class={label}>Opmerking <span class="font-normal text-muted">(optioneel)</span></label>
+          <textarea id="o-bericht" name="opmerking" rows="3" class={field}></textarea>
+        </div>
+        <div>
+          <label for="o-bron" class={label}>Hoe heb je ons gevonden?</label>
+          <select id="o-bron" name="gevonden_via" class={field} required>
+            <option value="">Maak een keuze</option>
+            {bronnen.map((b) => <option>{b}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <aside class="card self-start" aria-labelledby="bon-titel">
+        <h3 id="bon-titel">Je prijs</h3>
+        <ul class="mt-4 space-y-4 text-[0.95rem]" data-bon></ul>
+        <dl class="mt-4 space-y-1 border-t border-line pt-4 text-[0.95rem]">
+          <div class="flex justify-between"><dt class="text-muted">Waarvan btw ({btwPercentage}%)</dt><dd data-out-text="btw">–</dd></div>
+          <div class="flex justify-between" data-only="zakelijk" hidden><dt class="text-muted">Excl. btw</dt><dd data-out-text="excl">–</dd></div>
+          <div class="flex justify-between text-lg font-bold text-primary"><dt>Totaal incl. btw</dt><dd data-out-text="totaal">–</dd></div>
+        </dl>
+        <p class="mt-3 text-xs text-muted">Richtprijs. Je krijgt {site.responseTime} een reactie en daarna een vaste prijs.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Sticky receipt + navigation -->
+  <div class="receipt">
+    <div class="container-page flex items-center gap-3 py-3">
+      <button type="button" class="btn-back" data-nav="-1" hidden>Terug</button>
+      <p class="flex-1 leading-tight">
+        <span class="block text-sm text-muted" data-out-text="aantal">1 dienst gekozen</span>
+        <strong class="font-display text-2xl text-primary" data-out-text="totaal">–</strong>
+      </p>
+      <button type="button" class="btn-next" data-nav="1">Verder</button>
+      <button type="submit" class="btn-next" data-submit hidden>Offerte aanvragen</button>
+    </div>
+    <div class="container-page">
+      <p class="pb-3 text-sm font-semibold" data-form-status role="status" hidden></p>
+    </div>
+  </div>
+</form>
+
+<style>
+  .calc :global(.chip) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.9rem;
+    padding: 0.55rem 0.9rem;
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-button);
+    background: var(--color-paper);
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  }
+  .calc :global(.chip:hover) {
+    border-color: var(--color-secondary);
+  }
+  .calc :global(.chip:has(input:checked)) {
+    border-color: var(--color-primary);
+    background: var(--color-secondary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+  }
+  .calc :global(.chip:has(input:focus-visible)) {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .calc :global(.chip input) {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .calc :global(.chip-lg) {
+    justify-content: center;
+    min-height: 3.5rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--color-primary);
+  }
+  .calc :global(.chip-col) {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    gap: 0.1rem;
+  }
+  .calc :global(.badge) {
+    margin-left: auto;
+    border-radius: 999px;
+    background: var(--color-secondary-line);
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    white-space: nowrap;
+  }
+  .svc {
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .svc:has([data-svc-toggle]:checked) {
+    border-color: var(--color-primary);
+    box-shadow: 0 10px 30px -18px rgb(2 31 69 / 0.5);
+  }
+  .svc-head {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1.1rem 1.25rem;
+    cursor: pointer;
+  }
+  .svc-head input {
+    width: 1.35rem;
+    height: 1.35rem;
+    accent-color: var(--color-primary);
+    flex-shrink: 0;
+  }
+  .svc-icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    background: var(--color-secondary-soft);
+    color: var(--color-secondary);
+    flex-shrink: 0;
+  }
+  .svc-price {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  @media (max-width: 420px) {
+    .svc-icon {
+      display: none;
+    }
+    .svc-head {
+      padding: 1rem;
+    }
+  }
+  .svc-body {
+    display: none;
+    border-top: 1px solid var(--color-line);
+    padding: 1.25rem;
+  }
+  .svc:has([data-svc-toggle]:checked) .svc-body {
+    display: block;
+  }
+  .svc:has([data-svc-toggle]:checked) .svc-body.grid {
+    display: grid;
+  }
+  .svc:not(:has([data-svc-toggle]:checked)) .svc-price {
+    color: var(--color-muted);
+    font-weight: 500;
+  }
+  .stepper {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-button);
+    overflow: hidden;
+    background: var(--color-paper);
+  }
+  .stepper button {
+    width: 3rem;
+    min-height: 3rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    background: var(--color-surface);
+  }
+  .stepper button:hover {
+    background: var(--color-secondary-soft);
+  }
+  .stepper input {
+    width: 4.5rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-ink);
+    border: 0;
+    -moz-appearance: textfield;
+  }
+  .stepper input::-webkit-inner-spin-button,
+  .stepper input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+  .step-dot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 3px solid var(--color-line);
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+  .step-dot .step-num {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+    background: var(--color-line);
+    color: var(--color-primary);
+    font-size: 0.9rem;
+  }
+  .step-dot[aria-current='step'],
+  .step-dot.is-done {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .step-dot[aria-current='step'] .step-num,
+  .step-dot.is-done .step-num {
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .receipt {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    margin: 2rem -1rem 0;
+    border-top: 1px solid var(--color-line);
+    background: rgb(255 255 255 / 0.96);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 -12px 30px -20px rgb(2 31 69 / 0.6);
+  }
+  @media (min-width: 640px) {
+    .receipt {
+      margin-inline: -1.5rem;
+    }
+  }
+  .btn-next {
+    min-height: 3rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-button);
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-weight: 700;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  .btn-next:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-1px);
+  }
+  .btn-back {
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-button);
+    border: 1.5px solid var(--color-line-strong);
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+  .js-bump {
+    animation: bump 0.35s ease;
+  }
+  @keyframes bump {
+    40% {
+      transform: scale(1.08);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .js-bump {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { berekenOfferte, samenvatting, euro, type OfferteState } from '../lib/offerte';
+  import { verstuurFormulier } from '../lib/forms';
+
+  const form = document.getElementById('calc') as HTMLFormElement | null;
+  if (form) {
+    const $ = <T extends Element = HTMLElement>(sel: string) => form.querySelector<T>(sel);
+    const $$ = <T extends Element = HTMLElement>(sel: string) => [...form.querySelectorAll<T>(sel)];
+    const radio = (name: string) => $<HTMLInputElement>(`input[name="${name}"]:checked`)?.value ?? '';
+    const num = (key: string) => Number($<HTMLInputElement>(`[data-key="${key}"]`)?.value) || 0;
+    const svcOn = (id: string) => Boolean($<HTMLInputElement>(`[data-svc="${id}"] [data-svc-toggle]`)?.checked);
+    const visibleSelect = (key: string) =>
+      $$<HTMLSelectElement>(`select[data-key="${key}"]`).find((s) => !s.disabled)?.value ?? '';
+
+    const state = (): OfferteState => {
+      const extras: OfferteState['extras'] = {};
+      $$('[data-extra]').forEach((el) => {
+        const id = el.dataset.svc!;
+        extras[id] = { aan: svcOn(id), n: num(`extras.${id}`) };
+      });
+      const perStuk: Record<string, number> = {};
+      $$<HTMLInputElement>('[data-key^="glas.perStuk."]').forEach((i) => (perStuk[i.dataset.key!.split('.')[2]] = Number(i.value) || 0));
+      return {
+        voor: radio('calc_voor') as OfferteState['voor'],
+        glas: {
+          aan: svcOn('glas'),
+          woningtype: radio('calc_woningtype') || null,
+          ramen: num('glas.ramen'),
+          methode: radio('calc_methode'),
+          zijde: radio('calc_zijde'),
+          verdieping: radio('calc_verdieping'),
+          perStuk,
+          ladder: Boolean($<HTMLInputElement>('[data-key="glas.ladder"]')?.checked),
+          serre: radio('calc_serre'),
+          freq: radio('calc_glas_freq'),
+        },
+        schoonmaak: { aan: svcOn('schoonmaak'), type: visibleSelect('schoonmaak.type'), uren: num('schoonmaak.uren'), freq: visibleSelect('schoonmaak.freq') },
+        diep: { aan: svcOn('diep'), type: visibleSelect('diep.type'), uren: num('diep.uren') },
+        extras,
+      };
+    };
+
+    const setText = (key: string, text: string) => $$(`[data-out-text="${key}"]`).forEach((el) => (el.textContent = text));
+    let lastTotal = -1;
+
+    const render = () => {
+      const s = state();
+      const r = berekenOfferte(s);
+      // Per-service line prices (shown even when not selected, as a preview)
+      $$('[data-line]').forEach((el) => {
+        const id = el.dataset.line!;
+        const regel = r.regels.find((x) => x.id === id);
+        if (regel) el.textContent = euro(regel.bedrag);
+        else {
+          const preview = berekenOfferte({ ...s, glas: { ...s.glas, aan: id === 'glas' }, schoonmaak: { ...s.schoonmaak, aan: id === 'schoonmaak' }, diep: { ...s.diep, aan: id === 'diep' }, extras: Object.fromEntries(Object.entries(s.extras).map(([k, v]) => [k, { ...v, aan: k === id }])) });
+          el.textContent = preview.regels[0] ? euro(preview.regels[0].bedrag) : '–';
+        }
+      });
+      const n = r.regels.length;
+      setText('aantal', n === 0 ? 'Kies een dienst' : `${n} ${n === 1 ? 'dienst' : 'diensten'} gekozen`);
+      setText('totaal', euro(r.totaal));
+      setText('btw', euro(r.btw));
+      setText('excl', euro(r.exclBtw));
+      if (r.totaal !== lastTotal) {
+        $$('[data-out-text="totaal"]').forEach((el) => {
+          el.classList.remove('js-bump');
+          void (el as HTMLElement).offsetWidth;
+          el.classList.add('js-bump');
+        });
+        lastTotal = r.totaal;
+      }
+      // Receipt in step 3
+      const bon = $('[data-bon]');
+      if (bon) {
+        bon.innerHTML = '';
+        for (const x of r.regels) {
+          const li = document.createElement('li');
+          li.innerHTML = `<div class="flex justify-between gap-3 font-semibold text-primary"><span></span><span></span></div><p class="text-muted text-sm"></p>`;
+          const [t, b] = li.querySelectorAll('span');
+          t.textContent = x.titel;
+          b.textContent = euro(x.bedrag);
+          li.querySelector('p')!.textContent = [x.details.join(', '), x.terugkerend].filter(Boolean).join('. ');
+          bon.append(li);
+        }
+      }
+      // Hidden fields for the submission
+      ($('[data-out="samenvatting"]') as HTMLInputElement).value = samenvatting(s);
+      ($('[data-out="totaal"]') as HTMLInputElement).value = euro(r.totaal);
+      ($('[data-out="voor"]') as HTMLInputElement).value = s.voor;
+      ($('[data-nav="1"]') as HTMLButtonElement).disabled = n === 0;
+    };
+
+    // Woning / zakelijk switch
+    const applyVoor = () => {
+      const voor = radio('calc_voor');
+      $$('[data-only]').forEach((el) => {
+        const show = el.dataset.only === voor;
+        el.hidden = !show;
+        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) el.disabled = !show;
+      });
+      if (voor === 'zakelijk') {
+        const ramen = $<HTMLInputElement>('[data-key="glas.ramen"]')!;
+        if (Number(ramen.value) < 15) ramen.value = '20';
+      }
+    };
+
+    // Home-type presets set windows, side and floors (like a starting point)
+    const applyPreset = (input: HTMLInputElement) => {
+      $<HTMLInputElement>('[data-key="glas.ramen"]')!.value = input.dataset.ramen!;
+      const z = $<HTMLInputElement>(`input[name="calc_zijde"][value="${input.dataset.zijde}"]`);
+      const v = $<HTMLInputElement>(`input[name="calc_verdieping"][value="${input.dataset.verdieping}"]`);
+      if (z) z.checked = true;
+      if (v) v.checked = true;
+    };
+
+    form.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.name === 'calc_voor') applyVoor();
+      if (t.name === 'calc_woningtype') applyPreset(t);
+      render();
+    });
+    form.addEventListener('input', render);
+
+    // Steppers
+    $$<HTMLButtonElement>('[data-step-btn]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = btn.parentElement!.querySelector('input')!;
+        const step = Number(btn.dataset.stepBtn);
+        const min = Number(input.min || 0);
+        const max = Number(input.max || 999);
+        input.value = String(Math.min(max, Math.max(min, Math.round((Number(input.value || 0) + step) * 100) / 100)));
+        render();
+      });
+    });
+
+    // Steps
+    let step = 1;
+    const showStep = (n: number) => {
+      step = n;
+      $$('[data-step]').forEach((s) => (s.hidden = Number(s.dataset.step) !== n));
+      $$('[data-step-dot]').forEach((d) => {
+        const i = Number(d.dataset.stepDot);
+        d.toggleAttribute('aria-current', i === n);
+        if (i === n) d.setAttribute('aria-current', 'step');
+        d.classList.toggle('is-done', i < n);
+      });
+      ($('[data-nav="-1"]') as HTMLElement).hidden = n === 1;
+      ($('[data-nav="1"]') as HTMLElement).hidden = n === 3;
+      ($('[data-submit]') as HTMLElement).hidden = n !== 3;
+      $(`[data-step="${n}"] h2`)?.setAttribute('tabindex', '-1');
+      ($(`[data-step="${n}"] h2`) as HTMLElement | null)?.focus({ preventScroll: true });
+      form.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    };
+    const stepValid = (n: number) => {
+      const fields = $$<HTMLInputElement>(`[data-step="${n}"] [required]`);
+      const bad = fields.find((f) => !f.checkValidity());
+      if (bad) {
+        bad.reportValidity();
+        bad.focus();
+        return false;
+      }
+      return true;
+    };
+    $$<HTMLButtonElement>('[data-nav]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const dir = Number(b.dataset.nav);
+        if (dir > 0 && !stepValid(step)) return;
+        showStep(Math.min(3, Math.max(1, step + dir)));
+      }),
+    );
+
+    // Phone OR e-mail
+    const tel = $<HTMLInputElement>('#o-tel')!;
+    const email = $<HTMLInputElement>('#o-email')!;
+    const err = $('#o-contact-error')!;
+    const checkContact = () => {
+      const ok = tel.value.trim() !== '' || email.value.trim() !== '';
+      tel.setCustomValidity(ok ? '' : 'Vul een telefoonnummer of e-mailadres in.');
+      err.classList.toggle('hidden', ok);
+      return ok;
+    };
+    tel.addEventListener('input', checkContact);
+    email.addEventListener('input', checkContact);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      render();
+      const ok = checkContact() && stepValid(3) && stepValid(2);
+      if (ok) verstuurFormulier(form, $('[data-form-status]'));
+    });
+
+    // Tracking fields (written in BaseLayout)
+    let stored: Record<string, string> = {};
+    try {
+      stored = JSON.parse(sessionStorage.getItem('fd_tracking') || '{}');
+    } catch {
+      stored = {};
+    }
+    $$<HTMLInputElement>('[data-track]').forEach((i) => (i.value = stored[i.dataset.track!] || ''));
+
+    // Preselect from the URL: ?voor=zakelijk&dienst=glas|schoonmaak|diep|zonnepanelen…
+    const q = new URLSearchParams(location.search);
+    if (q.get('voor') === 'zakelijk') $<HTMLInputElement>('input[name="calc_voor"][value="zakelijk"]')!.checked = true;
+    const dienst = q.get('dienst');
+    if (dienst && $(`[data-svc="${dienst}"]`)) {
+      $$<HTMLInputElement>('[data-svc-toggle]').forEach((t) => (t.checked = t.closest<HTMLElement>('[data-svc]')!.dataset.svc === dienst));
+    }
+    applyVoor();
+    render();
+  }
+</script>

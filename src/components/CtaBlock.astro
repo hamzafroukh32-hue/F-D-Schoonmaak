@@ -1,0 +1,33 @@
+---
+import { site, whatsappUrl, telUrl } from '../config/site';
+import Button from './Button.astro';
+import Bubbles from './Bubbles.astro';
+
+interface Props {
+  title?: string;
+  text?: string;
+  aanspreek?: 'u' | 'je';
+  waText?: string;
+}
+const { aanspreek = 'u', waText } = Astro.props;
+const title = Astro.props.title ?? 'Liever eerst even overleggen?';
+const text =
+  Astro.props.text ??
+  (aanspreek === 'u'
+    ? `Stuur een appje met een foto, of bel ons. U krijgt antwoord ${site.responseTime}.`
+    : `Stuur een appje met een foto, of bel ons. Je krijgt antwoord ${site.responseTime}.`);
+---
+<section class="cta-shimmer relative overflow-hidden">
+  <Bubbles sparkles={false} />
+  <div class="container-page relative grid gap-8 py-16 sm:py-20 lg:grid-cols-[1.4fr_1fr] lg:items-end" data-reveal>
+    <div>
+      <h2 class="text-white">{title}</h2>
+      <p class="mt-4 max-w-[52ch] text-lg text-white/85">{text}</p>
+    </div>
+    <div class="flex flex-col gap-3 sm:flex-row lg:flex-col">
+      <Button href={whatsappUrl(waText)} variant="whatsapp" size="lg" icon="whatsapp" external data-cta="cta-whatsapp">App ons</Button>
+      <Button href="/offerte/" variant="accent" size="lg" data-cta="cta-offerte">Offerte aanvragen</Button>
+      <Button href={telUrl} variant="ghost-light" size="lg" icon="phone" data-cta="cta-bel">Bel {site.contact.phoneDisplay}</Button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,103 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Logo from '../components/Logo.astro';
+import Steps from '../components/Steps.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../config/site';
+import { withPlaceholders } from '../lib/text';
+
+const facts: { label: string; value: string }[] = [
+  { label: 'Bedrijfsnaam', value: site.name },
+  { label: 'Vestiging', value: `${site.address.street}, ${site.address.city}` },
+  { label: 'KvK-nummer', value: site.legal.kvk },
+];
+if (site.legal.btw) facts.push({ label: 'Btw-nummer', value: site.legal.btw });
+// Trust facts only when supplied.
+if (site.trust.insurance) facts.push({ label: 'Verzekering', value: site.trust.insurance });
+if (site.trust.vog === true) facts.push({ label: 'VOG', value: 'Aanwezig' });
+if (site.flags.showCertifications && site.trust.keurmerk) facts.push({ label: 'Keurmerk', value: site.trust.keurmerk });
+---
+<BaseLayout
+  title="Over ons | F&D Schoonmaak uit Oldenzaal"
+  description="F&D Schoonmaak is een jong schoonmaakbedrijf uit Oldenzaal. Eén vast aanspreekpunt, snel antwoord en een vaste prijs vooraf. Maak kennis."
+  crumbs={[{ name: 'Over ons', path: '/over-ons/' }]}
+>
+  <PageHero
+    title="Een jong schoonmaakbedrijf uit Oldenzaal"
+    intro={[
+      'F&D Schoonmaak is een jong bedrijf uit Twente. We zijn klein, en dat is bewust: u spreekt met de mensen die het werk doen en de beslissingen nemen.',
+    ]}
+    showCtas={false}
+  />
+
+  <section class="section" aria-labelledby="wie">
+    <div class="container-page grid items-center gap-10 lg:grid-cols-[1fr_1.2fr]">
+      <div class="grid place-items-center rounded-card bg-surface p-10">
+        <Logo size="footer" />
+      </div>
+      <div>
+        <h2 id="wie">{site.owner.name ? `Maak kennis met ${site.owner.name}` : 'Wie zijn wij?'}</h2>
+        <div class="mt-5 space-y-4 text-muted">
+          <p>F&amp;D Schoonmaak is begonnen in Oldenzaal, met één doel: schoonmaak en glasbewassing zoals je het zelf zou willen. Op tijd, grondig, en zonder gedoe over de prijs.</p>
+          <p>U heeft bij ons één vast aanspreekpunt. Geen callcenter en geen ticketnummer, maar iemand die uw naam en uw pand kent.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-surface" aria-labelledby="waarom">
+    <div class="container-page">
+      <h2 id="waarom">Drie dingen die we anders doen</h2>
+      <ul class="mt-10 grid border-t border-line-strong md:grid-cols-3 md:gap-x-10">
+        <li class="border-b border-line-strong py-6">
+          <Icon name="clock" class="h-8 w-8 text-secondary" />
+          <h3 class="mt-4">Snel antwoord</h3>
+          <p class="mt-2 text-muted">We reageren {site.responseTime} via WhatsApp of telefoon. U hoeft niet dagen te wachten op een offerte.</p>
+        </li>
+        <li class="border-b border-line-strong py-6">
+          <Icon name="euro" class="h-8 w-8 text-secondary" />
+          <h3 class="mt-4">Prijzen op de site</h3>
+          <p class="mt-2 text-muted">U ziet vooraf wat schoonmaak ongeveer kost, en u krijgt een vaste prijs voordat we beginnen.</p>
+        </li>
+        <li class="border-b border-line-strong py-6">
+          <Icon name="user" class="h-8 w-8 text-secondary" />
+          <h3 class="mt-4">Vast aanspreekpunt</h3>
+          <p class="mt-2 text-muted">Eén persoon die uw situatie kent. Iets aanpassen? Eén appje is genoeg.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="werkwijze">
+    <div class="container-page">
+      <h2 id="werkwijze">Zo werken we</h2>
+      <div class="mt-10">
+        <Steps
+          steps={[
+            { titel: 'Luisteren', tekst: 'U vertelt wat u nodig heeft. Wij stellen gerichte vragen of komen even kijken.' },
+            { titel: 'Afspreken', tekst: 'Een duidelijke offerte met een vaste prijs en wat we precies doen.' },
+            { titel: 'Uitvoeren en checken', tekst: 'We doen het werk en vragen u daarna of alles naar wens is.' },
+          ]}
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-surface" aria-labelledby="gegevens">
+    <div class="container-page max-w-3xl">
+      <h2 id="gegevens" class="text-2xl sm:text-3xl">Bedrijfsgegevens</h2>
+      <dl class="mt-6 divide-y divide-line overflow-hidden rounded-card border border-line bg-paper">
+        {facts.map((f) => (
+          <div class="grid gap-1 px-5 py-4 sm:grid-cols-[12rem_1fr]">
+            <dt class="font-semibold text-primary">{f.label}</dt>
+            <dd set:html={withPlaceholders(f.value)} />
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <CtaBlock title="Kennismaken?" text={`Stuur een appje of bel. U krijgt antwoord ${site.responseTime}.`} />
+</BaseLayout>
