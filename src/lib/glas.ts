@@ -4,7 +4,7 @@ import { extraDiensten } from '../data/prijzen';
 
 const g = site.glasbewassing;
 
-/** Extra outdoor services we offer (from the calculator config), plus the conservatory. */
+/** Extra outdoor services we offer (from the price config), plus the conservatory. */
 export const glasExtras = [...extraDiensten.filter((e) => e.aan).map((e) => e.label), 'Serre: buitenkant en serredak'];
 
 /** Spec rows shown on the window-cleaning pages. */

@@ -12,7 +12,7 @@ aanspreek: 'u'
 
 Wie zoekt naar de kosten van kantoorschoonmaak, vindt vaak alleen "vraag een offerte aan". Dat is begrijpelijk, want elk kantoor is anders. Maar het maakt vergelijken lastig.
 
-Wij doen het anders. Op onze [prijzenpagina](/prijzen/) ziet u vanaf-prijzen en een rekenhulp. Uw exacte prijs krijgt u daarna vooraf, zwart op wit.
+Wij doen het anders. Op onze [prijzenpagina](/prijzen/) ziet u vanaf-prijzen. Uw exacte prijs krijgt u daarna vooraf, zwart op wit.
 
 ## Waar bestaat de prijs uit?
 

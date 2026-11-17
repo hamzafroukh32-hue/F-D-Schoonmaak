@@ -40,7 +40,7 @@ export const diensten: Dienst[] = [
     h1: 'Glazenwasser voor je woning',
     intro: [
       'Schone ramen zie je meteen: meer licht, een frissere uitstraling, en jij hoeft niet zelf de ladder op.',
-      'Kies een losse beurt of een vaste ronde: dan komen we elke 4, 6 of 8 weken langs. Je prijs zie je meteen in onze offerte-calculator.',
+      'Kies een losse beurt of een vaste ronde: dan komen we elke 4, 6 of 8 weken langs. Vraag vrijblijvend een offerte aan.',
     ],
     kaartTekst: 'Streeploze ramen, los of elke 4, 6 of 8 weken.',
     voorWie: ['Rijtjeshuizen en hoekwoningen', 'Twee-onder-een-kap en vrijstaande woningen', 'Appartementen', 'Bij een verhuizing of oplevering'],
@@ -59,7 +59,7 @@ export const diensten: Dienst[] = [
       {
         vraag: 'Wat kost een glazenwasser?',
         antwoord:
-          'Dat hangt af van het type woning en het aantal ramen. Op onze prijzenpagina staan de vanaf-prijzen per woningtype en de korting bij een abonnement. Met de rekenhulp zie je meteen een indicatie.',
+          'Dat hangt af van het type woning en het aantal ramen. Op onze prijzenpagina staan de vanaf-prijzen per woningtype en de korting bij een abonnement. Voor een vaste prijs vraag je vrijblijvend een offerte aan.',
       },
       {
         vraag: 'Moet ik thuis zijn?',

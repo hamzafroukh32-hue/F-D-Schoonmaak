@@ -1,0 +1,515 @@
+---
+/**
+ * Simple quote request in three steps (Dienst → Details → Gegevens). No prices.
+ * Two services: Schoonmaak and Glasbewassing & gevelreiniging. Fields of a service that is not chosen are disabled,
+ * so only the chosen answers are sent. Sent via Web3Forms (src/lib/forms.ts) and arrives by e-mail.
+ */
+import Icon from './Icon.astro';
+import { absoluteUrl, whatsappUrl } from '../config/site';
+import { formEndpoint, formAccessKey } from '../lib/forms';
+import { plaatsen } from '../data/plaatsen';
+
+const schoonmaak = {
+  ruimte: ['Woning', 'Kantoor', 'Praktijk of zorglocatie', 'Winkel', 'Horeca', 'VvE / trappenhuis', 'Anders'],
+  frequentie: ['Eenmalig', 'Dagelijks', 'Wekelijks', 'Tweewekelijks', 'Maandelijks'],
+  oppervlakte: ['Minder dan 100 m²', '100 – 250 m²', '250 – 500 m²', 'Meer dan 500 m²', 'Weet ik niet'],
+  soort: ['Gewone schoonmaak', 'Diepteschoonmaak', 'Eindschoonmaak (verhuizing / oplevering)'],
+};
+const glas = {
+  wat: ['Glasbewassing', 'Gevelreiniging', 'Allebei'],
+  pand: ['Woning', 'Appartement', 'Bedrijfspand', 'VvE / complex'],
+  verdiepingen: ['Alleen begane grond', 'Tot en met 1e verdieping', 'Tot en met 2e verdieping', '3 of meer verdiepingen'],
+  kant: ['Alleen buiten', 'Alleen binnen', 'Binnen en buiten'],
+  bereikbaarheid: ['Vanaf de grond', 'Met een ladder', 'Hoogwerker nodig', 'Weet ik niet'],
+  frequentie: ['Eenmalig', 'Elke 4 weken', 'Elke 6 weken', 'Elke 8 weken', '4× per jaar'],
+};
+const bronnen = ['Google', 'Google Maps', 'Instagram', 'TikTok', 'Facebook', 'Via iemand die ik ken', 'QR-code', 'Anders'];
+const utmFields = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+
+const field =
+  'mt-1 block w-full min-h-12 rounded-button border border-line-strong bg-paper px-4 py-3 text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30';
+const label = 'block font-semibold text-primary';
+---
+<form method="POST" action={formEndpoint} id="offerte-aanvraag" class="aanvraag" novalidate>
+  <input type="hidden" name="access_key" value={formAccessKey} />
+  <input type="hidden" name="subject" value="Nieuwe offerte-aanvraag via de website" />
+  <input type="hidden" name="from_name" value="Website F&amp;D Schoonmaak" />
+  <input type="hidden" name="redirect" value={absoluteUrl('/bedankt/')} />
+  <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  <input type="hidden" name="Gekozen diensten" data-out="diensten" />
+  {utmFields.map((n) => <input type="hidden" name={n} data-track={n} />)}
+  <input type="hidden" name="landingspagina" data-track="landingspagina" />
+  <input type="hidden" name="verwijzer" data-track="verwijzer" />
+
+  <ol class="mb-8 grid grid-cols-3 gap-2" aria-label="Stappen">
+    {['Dienst', 'Details', 'Gegevens'].map((s, i) => (
+      <li class="step-dot" data-step-dot={i + 1} aria-current={i === 0 ? 'step' : undefined}>
+        <span class="step-num">{i + 1}</span> {s}
+      </li>
+    ))}
+  </ol>
+
+  <!-- STEP 1: DIENST -->
+  <section data-step="1" aria-labelledby="stap1">
+    <h2 id="stap1" class="text-[2rem]">Waarmee kunnen we je helpen?</h2>
+    <p class="mt-2 text-muted">Kies één of allebei. Je zit nergens aan vast.</p>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <label class="dienst">
+        <input type="checkbox" value="Schoonmaak" data-dienst="schoonmaak" />
+        <span class="dienst-icon"><Icon name="kantoor" class="h-7 w-7" /></span>
+        <span>
+          <strong class="block font-display text-xl text-primary">Schoonmaak</strong>
+          <span class="text-muted">Kantoor, praktijk, woning of VvE. Eenmalig of vast.</span>
+        </span>
+        <span class="dienst-check" aria-hidden="true"><Icon name="check" class="h-4 w-4" /></span>
+      </label>
+      <label class="dienst">
+        <input type="checkbox" value="Glasbewassing & gevelreiniging" data-dienst="glas" />
+        <span class="dienst-icon"><Icon name="glas" class="h-7 w-7" /></span>
+        <span>
+          <strong class="block font-display text-xl text-primary">Glasbewassing &amp; gevelreiniging</strong>
+          <span class="text-muted">Ramen en gevels van woningen en bedrijfspanden.</span>
+        </span>
+        <span class="dienst-check" aria-hidden="true"><Icon name="check" class="h-4 w-4" /></span>
+      </label>
+    </div>
+    <p class="mt-3 hidden text-sm font-semibold text-danger" data-dienst-error role="alert">Kies minstens één dienst.</p>
+
+    <fieldset class="mt-8">
+      <legend class={label}>Voor wie?</legend>
+      <div class="mt-2 grid grid-cols-2 gap-3 sm:max-w-md">
+        <label class="chip chip-lg"><input type="radio" name="Voor" value="Particulier" checked /><Icon name="woning" class="h-5 w-5" /> Particulier</label>
+        <label class="chip chip-lg"><input type="radio" name="Voor" value="Zakelijk" /><Icon name="kantoor" class="h-5 w-5" /> Zakelijk</label>
+      </div>
+    </fieldset>
+  </section>
+
+  <!-- STEP 2: DETAILS -->
+  <section data-step="2" hidden aria-labelledby="stap2">
+    <h2 id="stap2" class="text-[2rem]">Vertel iets meer</h2>
+    <p class="mt-2 text-muted">Een paar korte vragen, zodat we je meteen een goede offerte kunnen sturen.</p>
+
+    <fieldset class="detail mt-8" data-detail="schoonmaak" hidden>
+      <legend class="font-display text-2xl font-bold text-primary">Schoonmaak</legend>
+      <div class="mt-4 grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="s-ruimte" class={label}>Wat moet er schoon?</label>
+          <select id="s-ruimte" name="Schoonmaak – soort ruimte" class={field} required>
+            <option value="">Maak een keuze</option>
+            {schoonmaak.ruimte.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="s-soort" class={label}>Wat voor schoonmaak?</label>
+          <select id="s-soort" name="Schoonmaak – soort beurt" class={field} required>
+            <option value="">Maak een keuze</option>
+            {schoonmaak.soort.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="s-freq" class={label}>Hoe vaak?</label>
+          <select id="s-freq" name="Schoonmaak – hoe vaak" class={field} required>
+            <option value="">Maak een keuze</option>
+            {schoonmaak.frequentie.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="s-m2" class={label}>Hoe groot ongeveer?</label>
+          <select id="s-m2" name="Schoonmaak – oppervlakte" class={field} required>
+            <option value="">Maak een keuze</option>
+            {schoonmaak.oppervlakte.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="detail mt-10" data-detail="glas" hidden>
+      <legend class="font-display text-2xl font-bold text-primary">Glasbewassing &amp; gevelreiniging</legend>
+      <div class="mt-4 grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="g-wat" class={label}>Wat wil je laten doen?</label>
+          <select id="g-wat" name="Glas – wat" class={field} required>
+            {glas.wat.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="g-pand" class={label}>Soort pand</label>
+          <select id="g-pand" name="Glas – soort pand" class={field} required>
+            <option value="">Maak een keuze</option>
+            {glas.pand.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="g-ramen" class={label}>Aantal ramen <span class="font-normal text-muted">(ongeveer, optioneel)</span></label>
+          <input id="g-ramen" name="Glas – aantal ramen" type="number" inputmode="numeric" min="1" max="999" class={field} placeholder="Bijvoorbeeld 12" />
+        </div>
+        <div>
+          <label for="g-verd" class={label}>Verdiepingen</label>
+          <select id="g-verd" name="Glas – verdiepingen" class={field} required>
+            <option value="">Maak een keuze</option>
+            {glas.verdiepingen.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="g-kant" class={label}>Binnen, buiten of allebei?</label>
+          <select id="g-kant" name="Glas – binnen of buiten" class={field} required>
+            {glas.kant.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="g-bereik" class={label}>Hoe zijn de ramen bereikbaar?</label>
+          <select id="g-bereik" name="Glas – bereikbaarheid" class={field} required>
+            {glas.bereikbaarheid.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label for="g-freq" class={label}>Hoe vaak?</label>
+          <select id="g-freq" name="Glas – hoe vaak" class={field} required>
+            <option value="">Maak een keuze</option>
+            {glas.frequentie.map((o) => <option>{o}</option>)}
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <p class="mt-8 rounded-card bg-surface p-4 text-[0.95rem] text-muted">
+      Een foto helpt ons om sneller een goede offerte te maken.
+      <a href={whatsappUrl('Hallo F&D Schoonmaak, hierbij een foto voor mijn offerte-aanvraag: ')} target="_blank" rel="noopener" class="font-semibold text-secondary">Stuur hem via WhatsApp</a>.
+    </p>
+  </section>
+
+  <!-- STEP 3: GEGEVENS -->
+  <section data-step="3" hidden aria-labelledby="stap3">
+    <h2 id="stap3" class="text-[2rem]">Je gegevens</h2>
+    <p class="mt-2 text-muted">Je krijgt binnen 1 minuut een reactie, daarna een vrijblijvende offerte.</p>
+    <div class="mt-6 grid gap-5 sm:grid-cols-2">
+      <div>
+        <label for="o-naam" class={label}>Naam</label>
+        <input id="o-naam" name="Naam" class={field} autocomplete="name" required />
+      </div>
+      <div data-zakelijk hidden>
+        <label for="o-bedrijf" class={label}>Bedrijfsnaam</label>
+        <input id="o-bedrijf" name="Bedrijfsnaam" class={field} autocomplete="organization" disabled />
+      </div>
+      <div>
+        <label for="o-tel" class={label}>Telefoon</label>
+        <input id="o-tel" name="Telefoon" type="tel" inputmode="tel" autocomplete="tel" class={field} />
+      </div>
+      <div>
+        <label for="o-email" class={label}>E-mail</label>
+        <input id="o-email" name="email" type="email" autocomplete="email" class={field} />
+      </div>
+      <p id="o-contact-hint" class="-mt-3 text-sm text-muted sm:col-span-2">Telefoon óf e-mail is genoeg.</p>
+      <p id="o-contact-error" class="-mt-3 hidden text-sm font-semibold text-danger sm:col-span-2" role="alert">Vul een telefoonnummer of e-mailadres in.</p>
+      <div>
+        <label for="o-postcode" class={label}>Postcode</label>
+        <input id="o-postcode" name="Postcode" class={field} autocomplete="postal-code" placeholder="7571 AB" required />
+      </div>
+      <div>
+        <label for="o-plaats" class={label}>Plaats</label>
+        <input id="o-plaats" name="Plaats" class={field} list="o-plaatsen" autocomplete="address-level2" required />
+        <datalist id="o-plaatsen">{plaatsen.map((p) => <option value={p.naam} />)}</datalist>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="o-bericht" class={label}>Opmerking <span class="font-normal text-muted">(optioneel)</span></label>
+        <textarea id="o-bericht" name="Opmerking" rows="3" class={field}></textarea>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="o-bron" class={label}>Hoe heb je ons gevonden?</label>
+        <select id="o-bron" name="Gevonden via" class={field} required>
+          <option value="">Maak een keuze</option>
+          {bronnen.map((b) => <option>{b}</option>)}
+        </select>
+      </div>
+    </div>
+    <p class="mt-4 text-sm text-muted">
+      We gebruiken je gegevens alleen voor je aanvraag. Lees onze <a href="/privacyverklaring/" class="text-secondary">privacyverklaring</a>.
+    </p>
+  </section>
+
+  <div class="nav-bar">
+    <div class="container-page flex items-center gap-3 py-3">
+      <button type="button" class="btn-back" data-nav="-1" hidden>Terug</button>
+      <p class="flex-1 text-sm text-muted" data-stap-tekst>Stap 1 van 3</p>
+      <button type="button" class="btn-next" data-nav="1">Volgende</button>
+      <button type="submit" class="btn-next" data-submit hidden>Offerte aanvragen</button>
+    </div>
+    <div class="container-page">
+      <p class="pb-3 text-sm font-semibold" data-form-status role="status" hidden></p>
+    </div>
+  </div>
+</form>
+
+<style>
+  .dienst {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+  .dienst:hover {
+    border-color: var(--color-secondary);
+    transform: translateY(-2px);
+  }
+  .dienst:has(input:checked) {
+    border-color: var(--color-primary);
+    background: var(--color-secondary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+  }
+  .dienst:has(input:focus-visible) {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .dienst input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .dienst-icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 999px;
+    background: var(--color-secondary-soft);
+    color: var(--color-secondary);
+  }
+  .dienst:has(input:checked) .dienst-icon {
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .dienst-check {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: 999px;
+    color: transparent;
+  }
+  .dienst:has(input:checked) .dienst-check {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .aanvraag :global(.chip) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3.5rem;
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-button);
+    background: var(--color-paper);
+    font-weight: 700;
+    color: var(--color-primary);
+    cursor: pointer;
+  }
+  .aanvraag :global(.chip:has(input:checked)) {
+    border-color: var(--color-primary);
+    background: var(--color-secondary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+  }
+  .aanvraag :global(.chip:has(input:focus-visible)) {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .aanvraag :global(.chip input) {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .step-dot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 3px solid var(--color-line);
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+  .step-num {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+    background: var(--color-line);
+    color: var(--color-primary);
+    font-size: 0.9rem;
+  }
+  .step-dot[aria-current='step'],
+  .step-dot.is-done {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .step-dot[aria-current='step'] .step-num,
+  .step-dot.is-done .step-num {
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .nav-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    margin: 2rem -1rem 0;
+    border-top: 1px solid var(--color-line);
+    background: rgb(255 255 255 / 0.96);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 -12px 30px -20px rgb(2 31 69 / 0.6);
+  }
+  @media (min-width: 640px) {
+    .nav-bar {
+      margin-inline: -1.5rem;
+    }
+  }
+  .btn-next {
+    min-height: 3rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-button);
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-weight: 700;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  .btn-next:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-1px);
+  }
+  .btn-back {
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius-button);
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+</style>
+
+<script>
+  import { verstuurFormulier } from '../lib/forms';
+
+  const form = document.getElementById('offerte-aanvraag') as HTMLFormElement | null;
+  if (form) {
+    const $ = <T extends Element = HTMLElement>(sel: string) => form.querySelector<T>(sel);
+    const $$ = <T extends Element = HTMLElement>(sel: string) => [...form.querySelectorAll<T>(sel)];
+    const gekozen = () => $$<HTMLInputElement>('[data-dienst]').filter((i) => i.checked).map((i) => i.dataset.dienst!);
+
+    // Only the chosen services' questions are shown and sent
+    const syncDetails = () => {
+      const keuze = gekozen();
+      $$('[data-detail]').forEach((fs) => {
+        const aan = keuze.includes(fs.dataset.detail!);
+        fs.hidden = !aan;
+        fs.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select').forEach((el) => (el.disabled = !aan));
+      });
+      ($('[data-out="diensten"]') as HTMLInputElement).value = $$<HTMLInputElement>('[data-dienst]:checked').map((i) => i.value).join(' + ');
+      $('[data-dienst-error]')!.classList.toggle('hidden', keuze.length > 0);
+    };
+    const syncZakelijk = () => {
+      const zakelijk = $<HTMLInputElement>('input[name="Voor"]:checked')?.value === 'Zakelijk';
+      const box = $('[data-zakelijk]')!;
+      box.hidden = !zakelijk;
+      box.querySelector('input')!.disabled = !zakelijk;
+    };
+    form.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.dataset.dienst) syncDetails();
+      if (t.name === 'Voor') syncZakelijk();
+    });
+
+    // Steps
+    let step = 1;
+    const showStep = (n: number) => {
+      step = n;
+      $$('[data-step]').forEach((s) => (s.hidden = Number(s.dataset.step) !== n));
+      $$('[data-step-dot]').forEach((d) => {
+        const i = Number(d.dataset.stepDot);
+        if (i === n) d.setAttribute('aria-current', 'step');
+        else d.removeAttribute('aria-current');
+        d.classList.toggle('is-done', i < n);
+      });
+      ($('[data-nav="-1"]') as HTMLElement).hidden = n === 1;
+      ($('[data-nav="1"]') as HTMLElement).hidden = n === 3;
+      ($('[data-submit]') as HTMLElement).hidden = n !== 3;
+      $('[data-stap-tekst]')!.textContent = `Stap ${n} van 3`;
+      const h = $<HTMLElement>(`[data-step="${n}"] h2`);
+      h?.setAttribute('tabindex', '-1');
+      h?.focus({ preventScroll: true });
+      form.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    };
+    const stepValid = (n: number) => {
+      if (n === 1) {
+        syncDetails();
+        return gekozen().length > 0;
+      }
+      const bad = $$<HTMLInputElement>(`[data-step="${n}"] [required]:not(:disabled)`).find((f) => !f.checkValidity());
+      if (bad) {
+        bad.reportValidity();
+        bad.focus();
+        return false;
+      }
+      return true;
+    };
+    $$<HTMLButtonElement>('[data-nav]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const dir = Number(b.dataset.nav);
+        if (dir > 0 && !stepValid(step)) return;
+        showStep(Math.min(3, Math.max(1, step + dir)));
+      }),
+    );
+
+    // Phone OR e-mail
+    const tel = $<HTMLInputElement>('#o-tel')!;
+    const email = $<HTMLInputElement>('#o-email')!;
+    const checkContact = () => {
+      const ok = tel.value.trim() !== '' || email.value.trim() !== '';
+      tel.setCustomValidity(ok ? '' : 'Vul een telefoonnummer of e-mailadres in.');
+      $('#o-contact-error')!.classList.toggle('hidden', ok);
+      return ok;
+    };
+    tel.addEventListener('input', checkContact);
+    email.addEventListener('input', checkContact);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (checkContact() && stepValid(3)) verstuurFormulier(form, $('[data-form-status]'));
+    });
+
+    // Tracking fields (written in BaseLayout)
+    let stored: Record<string, string> = {};
+    try {
+      stored = JSON.parse(sessionStorage.getItem('fd_tracking') || '{}');
+    } catch {
+      stored = {};
+    }
+    $$<HTMLInputElement>('[data-track]').forEach((i) => (i.value = stored[i.dataset.track!] || ''));
+
+    // Preselect from the URL: ?dienst=glas|schoonmaak&voor=zakelijk
+    const q = new URLSearchParams(location.search);
+    const dienst = q.get('dienst') === 'diep' ? 'schoonmaak' : q.get('dienst');
+    const pre = dienst && $<HTMLInputElement>(`[data-dienst="${dienst}"]`);
+    if (pre) pre.checked = true;
+    if (q.get('voor') === 'zakelijk') $<HTMLInputElement>('input[name="Voor"][value="Zakelijk"]')!.checked = true;
+    if (q.get('dienst') === 'diep') {
+      const soort = $<HTMLSelectElement>('#s-soort')!;
+      soort.value = 'Diepteschoonmaak';
+    }
+    syncDetails();
+    $('[data-dienst-error]')!.classList.add('hidden');
+    syncZakelijk();
+  }
+</script>

@@ -123,7 +123,7 @@ export const prijsfactoren = [
 
 
 /* ------------------------------------------------------------------ */
-/* Offerte-calculator (/offerte/). Prices are INCLUDING 21% btw.       */
+/* Detailed prices (shown on /prijzen/). Prices are INCLUDING 21% btw.  */
 /* ------------------------------------------------------------------ */
 
 export const btwPercentage = 21;

@@ -48,6 +48,6 @@ Bij een vaste ronde zit er per beurt minder vuil op de ramen, en kan de glazenwa
 
 ## Wat kost een glazenwasser bij F&D Schoonmaak?
 
-Onze vanaf-prijzen per type woning en de korting per abonnement staan op de [prijzenpagina](/prijzen/). Met de [offerte-calculator](/offerte/?dienst=glas) zie je meteen een indicatie.
+Onze vanaf-prijzen per type woning en de korting per abonnement staan op de [prijzenpagina](/prijzen/). Wil je een prijs op maat? [Vraag een offerte aan](/offerte/?dienst=glas).
 
 Wil je een vaste prijs? App ons je type woning en een foto van de voor- en achterkant. Je krijgt binnen 1 minuut antwoord. Lees meer over onze [glasbewassing voor woningen](/diensten/glasbewassing-particulier/), of bekijk [glasbewassing voor bedrijven](/diensten/glasbewassing-zakelijk/).
